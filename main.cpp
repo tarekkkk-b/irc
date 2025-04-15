@@ -2,7 +2,7 @@
 # include <sstream>
 # include <stdexcept>
 
-# include "srcs/Server.hpp"
+# include "inc/Server.hpp"
 
 int strToIntSafe (std::string intStr)
 {
@@ -16,12 +16,12 @@ int strToIntSafe (std::string intStr)
     return num;
 }
     
-    int main(int argc, char **argv)
+int main(int argc, char **argv)
+{
+    try
     {
-        try
-        {
-            if(argc != 3)
-                throw std::invalid_argument("Program arguments should be <port> <password>");
+        if(argc != 3)
+            throw std::invalid_argument("Program arguments should be <port> <password>");
         int portInt = strToIntSafe(argv[1]);
         Server server(portInt, argv[2]);
     }
