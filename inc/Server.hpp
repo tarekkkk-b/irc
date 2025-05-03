@@ -4,6 +4,8 @@
  #include <netinet/in.h>
  #include <iostream>
  #include <arpa/inet.h>
+ #include <vector>
+ #include "Client.hpp"
 
 class Server
 {
@@ -11,6 +13,7 @@ class Server
         int _servPort;
         std::string _servPass;
         int _servFd;
+        std:: vector <Client> clients_list;
         
         Server();
 
@@ -21,6 +24,7 @@ class Server
         ~Server();
 
         void initSocket();
+        void handle_connections();
 
 };
 
