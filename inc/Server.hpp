@@ -2,10 +2,12 @@
 # define SERVER_HPP
  #include <sys/socket.h>
  #include <netinet/in.h>
+ #include <sys/event.h>
  #include <iostream>
  #include <arpa/inet.h>
  #include <vector>
  #include "Client.hpp"
+ #define MAX_EVENTS 100
 
 class Server
 {
@@ -14,6 +16,9 @@ class Server
         std::string _servPass;
         int _servFd;
         std:: vector <Client> clients_list;
+        int kq;
+        std::vector <int> clientsSocket;
+        int clientcount;
         
         Server();
 
@@ -23,8 +28,9 @@ class Server
         Server & operator = (Server const & rhs);
         ~Server();
 
-        void initSocket();
-        void handle_connections();
+        void initServerSocke();
+        void registerListenFd();
+        void handleEvents();
 
 };
 

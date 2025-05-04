@@ -6,6 +6,7 @@ Server::Server(int port, std::string password)
 {
     this->_servPort = port;
     this->_servPass = password;
+    this->clientcount = 0;
 
     std::cout << "Server initialized at port: " << this->_servPort;
     std::cout << " | password: " << this->_servPass << std::endl;
@@ -37,7 +38,7 @@ Server::~Server()
     std::cout << "╚═════════════════════════════════╝\n";
 }
 
-void Server:: initSocket()
+void Server:: initServerSocket()
 {
     this->_servFd= socket(AF_INET,SOCK_STREAM,0);
     struct sockaddr_in server_addr;
@@ -49,9 +50,9 @@ void Server:: initSocket()
     // std::cout<<"hi this is my fd"<<this->_servFd<<"\n";
 }
 
-void Server:: handle_connections()
+void Server:: registerListenFd()
 {
-    int kq = kqueue();
+    this-> kq = kqueue();
     if (kq == -1)
     {
         perror("kqueue");
@@ -66,7 +67,6 @@ void Server:: handle_connections()
     //     intptr_t   data;      // Info about the event (e.g. bytes ready to read)
     //     void      *udata;     // Your custom data (context pointer, optional)
     // };
-    
     struct kevent ev;
     // tell the kernal what to watch is like im telling the kernal please watch for me any read event on the srever socket
     EV_SET(&ev, this->_servFd, EVFILT_READ, EV_ADD, 0, 0, NULL);
@@ -75,10 +75,32 @@ void Server:: handle_connections()
     //    const struct kevent *changelist, int nchanges, 
     //     struct kevent *eventlist, int nevents, 
     //     const struct timespec *timeout);
-    if (kevent(kq, &ev, 1, NULL, 0, NULL) == -1)
+    if (kevent(this->kq, &ev, 1, NULL, 0, NULL) == -1)
     {
         perror("kevent register listen_fd");
         exit(EXIT_FAILURE);
+    }
+    handleEvents();
+}
+
+void Server :: handleEvents()
+{
+    struct kevent ev[MAX_EVENTS];
+    int clientFd;
+    while (true)
+    {
+       int  en =  kevent(this->kq, NULL, 0, ev,MAX_EVENTS , NULL) ;
+       for(int  i = 0 ;i < en ;i++)
+       {
+            struct kevent event = ev[i];
+            if(event.ident = this ->_servFd)
+            {
+                
+                
+                
+            }
+       }
+
     }
 
 }
