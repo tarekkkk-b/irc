@@ -7,15 +7,19 @@
  #include <arpa/inet.h>
  #include <vector>
  #include "Client.hpp"
- #define MAX_EVENTS 100
+ #include <unistd.h>
+ #include <unistd.h> 
+#include <string>     
+#include <iostream> 
+ #define MAX_EVENTS 1024
 
 class Server
 {
     private:
         int _servPort;
         std::string _servPass;
-        int _servFd;
-        std:: vector <Client> clients_list;
+        uintptr_t _servFd;
+        // std:: vector <Client> clients_list;
         int kq;
         std::vector <int> clientsSocket;
         int clientcount;
@@ -28,9 +32,10 @@ class Server
         Server & operator = (Server const & rhs);
         ~Server();
 
-        void initServerSocke();
-        void registerListenFd();
+        void initServerSocket();
+        void registerEvents(int fd , int16_t  filter);
         void handleEvents();
+       void registerChannelCients(std::vector <int> channelClients);
 
 };
 
