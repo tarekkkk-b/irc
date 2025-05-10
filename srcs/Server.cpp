@@ -119,7 +119,7 @@ void Server :: handleEvents()
             }
             else
             {
-                write(1, message.c_str(), message.size());
+                write(event.ident, message.c_str(), message.size());
             }
        }
 
