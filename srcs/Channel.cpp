@@ -9,7 +9,7 @@ Channel::Channel(std::string name, Client * channelCreator) : isInviteOnly(false
 	this->_name = name; // "476: <channel> :Bad Channel Mask"
 	addClient(channelCreator, channelCreator);
 	addOperator(channelCreator, channelCreator);
-	std::cout << "Channel: " << name << " has been created by client: " << channelCreator->socketFd << '\n'; 
+	std::cout << "Channel: " << name << " has been created by client: " << "<channelCreator->socketFd>" << '\n'; 
 }
 
 Channel::Channel(const Channel & other)
@@ -42,16 +42,16 @@ void    Channel::addClient(Client const * commander, Client * client, std::strin
 		std::cout << "475: <client> <channel> :Cannot join channel (+k)\n";
 	else
 	{
+		// if client is not operator will join here anyways
 		this->_clients.push_back(client);
-		std::cout << client->socketFd << " " << this->_name << " :";
+		std::cout << "<client->socketFd>" << " " << this->_name << " :";
 		if (this->isTopicRestricted)
 			std::cout << this->_topic << "\n";
 		else
 			std::cout << "No topic is set\n";
 	}
-
 }
-	
+
 void    Channel::removeClient(Client const * commander, Client * client)
 {
 	if (!clientIsOperator(commander))
@@ -149,4 +149,6 @@ void	Channel::unsetPassword(Client const * commander)
 {
 	if (!clientIsOperator(commander))
 		std::cout << "482: <client> <channel> :Permission Denied- You're not channel operator\n"; // later to be changed to send()
-}
+	else
+		hasPassword = false;
+	}
