@@ -1,6 +1,6 @@
 CPP = c++
 CPPFLAGS = -Wall -Wextra -Werror -std=c++98
-CPPFILES = srcs/Server.cpp main.cpp
+CPPFILES = srcs/Server.cpp main.cpp srcs/Client.cpp srcs/Channel.cpp
 NAME = ircserv
 
 all: $(NAME)
@@ -15,4 +15,3 @@ fclean:
 	rm -rf $(NAME)
 
 re: clean all
-
