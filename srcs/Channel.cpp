@@ -2,10 +2,10 @@
 
 Channel::Channel() {}
 
-Channel::Channel(std::string name, Client * channelCreator) : isInviteOnly(false),
+Channel::Channel(std::string const name, Client const  * channelCreator) : isInviteOnly(false),
 		isTopicRestricted(false), hasPassword(false), hasUsersLimit(false)
 {
-	// should I check the name here or in the command section??
+	// should I check the name here or in the command section?? I should check in command, we should assume her that it is valid
 	this->_name = name; // "476: <channel> :Bad Channel Mask"
 	addClient(channelCreator, channelCreator);
 	addOperator(channelCreator, channelCreator);
@@ -28,10 +28,12 @@ Channel &Channel::operator=(const Channel & rhs)
 
 Channel::~Channel()
 {
+	_clients.clear();
+	_operators.clear();
 	// I might have to free all _clients and _operators
 }
 
-void    Channel::addClient(Client const * commander, Client * client, std::string password)
+void    Channel::addClient(Client const * commander, Client const * client, std::string password)
 {
 	
 	if (this->hasUsersLimit && _clients.size() >= (unsigned long) usersLimit)
@@ -42,7 +44,7 @@ void    Channel::addClient(Client const * commander, Client * client, std::strin
 		std::cout << "475: <client> <channel> :Cannot join channel (+k)\n";
 	else
 	{
-		// if client is not operator will join here anyways
+		// remove invitation.
 		this->_clients.push_back(client);
 		std::cout << "<client->socketFd>" << " " << this->_name << " :";
 		if (this->isTopicRestricted)
@@ -52,13 +54,13 @@ void    Channel::addClient(Client const * commander, Client * client, std::strin
 	}
 }
 
-void    Channel::removeClient(Client const * commander, Client * client)
+void    Channel::removeClient(Client const * commander, Client const * client)
 {
 	if (!clientIsOperator(commander))
 		std::cout << "482: <client> <channel> :Permission Denied- You're not channel operator\n"; // later to be changed to send()
 	else
 	{
-		std::vector<Client * >::iterator clientToBeRemoved = std::find(_clients.begin(), _clients.end(), client);
+		std::vector<Client const * >::iterator clientToBeRemoved = std::find(_clients.begin(), _clients.end(), client);
 		if (clientToBeRemoved != _clients.end())
 			_clients.erase(clientToBeRemoved);
 
@@ -68,7 +70,35 @@ void    Channel::removeClient(Client const * commander, Client * client)
 	}
 }
 
-void    Channel::addOperator(Client const * commander, Client * client)
+void    Channel::inviteClient(Client const * commander, Client const * client)
+{
+	
+	if (!clientIsOperator(commander))
+		std::cout << "473: <client> <channel> :Cannot join channel (+i)\n";
+	else
+	{
+		this->_invitations.push_back(client);
+		std::cout << "<client->socketFd>" << " " << this->_name << " :";
+		if (this->isTopicRestricted)
+			std::cout << this->_topic << "\n";
+		else
+			std::cout << "No topic is set\n";
+	}
+}
+
+void    Channel::uninviteClient(Client const * commander, Client const * client)
+{
+	if (!clientIsOperator(commander))
+		std::cout << "482: <client> <channel> :Permission Denied- You're not channel operator\n"; // later to be changed to send()
+	else
+	{
+		std::vector<Client const * >::iterator invitationToBeRemoved = std::find(_invitations.begin(), _invitations.end(), client);
+		if (invitationToBeRemoved != _invitations.end())
+			_invitations.erase(invitationToBeRemoved);
+	}
+}
+
+void    Channel::addOperator(Client const * commander, Client const * client)
 {
 	if (clientIsOperator(commander) || _operators.size() == 0)
 		this->_operators.push_back(client);
@@ -76,19 +106,19 @@ void    Channel::addOperator(Client const * commander, Client * client)
 		std::cout << "482: <client> <channel> :Permission Denied- You're not channel operator\n"; // later to be changed to send()
 }
 
-void    Channel::removeOperator(Client const * commander, Client * client)
+void    Channel::removeOperator(Client const * commander, Client const * client)
 {
 	if (!clientIsOperator(commander))
 		std::cout << "482: <client> <channel> :Permission Denied- You're not channel operator\n"; // later to be changed to send()
 	else
 	{
-		std::vector<Client * >::iterator clientToBeRemoved = std::find(_operators.begin(), _operators.end(), client);
+		std::vector<Client const* >::iterator clientToBeRemoved = std::find(_operators.begin(), _operators.end(), client);
 		if (clientToBeRemoved != _operators.end())
 			_operators.erase(clientToBeRemoved);
 	}
 }
 
-bool	Channel::clientIsMember(Client const *client) const
+bool	Channel::clientIsMember(Client const * client) const
 {
 	if (std::find(_clients.begin(), _clients.end(), client) != _clients.end())
 		return true;

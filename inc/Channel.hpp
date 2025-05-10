@@ -18,22 +18,26 @@ class Channel
 		bool hasPassword;
 		bool hasUsersLimit;
 
-		std::vector < Client * > _clients;
-		std::vector <Client * > _operators;
+		std::vector < Client const * > _clients;
+		std::vector <Client const * > _operators;
+		std::vector < Client const * > _invitations;
 		Channel();
 
 	public:
 
-		Channel(std::string name, Client * channelCreator);
+		Channel(std::string const name, Client const * channelCreator);
 		Channel(const  Channel & other);
 		Channel & operator = (const Channel & rhs);
 		~Channel();
 		
-		void    addClient(Client const * commander, Client * client, std::string password = "");
-		void    removeClient(Client const * commander, Client * client);
+		void    addClient(Client const * commander, Client const * client, std::string password = "");
+		void    removeClient(Client const * commander, Client const * client);
 		
-		void    addOperator(Client const * commander, Client * client);
-		void    removeOperator(Client const * commander, Client * client);
+		void    inviteClient(Client const * commander, Client const * client);
+		void    uninviteClient(Client const * commander, Client const * client);
+		
+		void    addOperator(Client const * commander, Client const * client);
+		void    removeOperator(Client const * commander, Client const * client);
 		
 		void	setPassword(Client const * commander, std::string password); 
 		void	unsetPassword(Client const * commander); 
