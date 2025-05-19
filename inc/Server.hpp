@@ -24,8 +24,8 @@ class Server
         int _servPort;
         std::string _servPass;
         uintptr_t _servFd;
-        std::map <std::string, Client const * > clients_list;
-        std:: map <std::string, Channel const * > _channels;
+        std::map <std::string, Client * > clients_list;
+        std:: map <std::string, Channel * > _channels;
         int kq;
         std::vector <int> clientsSocket;
         int clientcount;
@@ -43,6 +43,8 @@ class Server
         void registerEvents(int fd , int16_t  filter);
         void handleEvents();
         void registerChannelCients(std::vector <int> channelClients);
+
+        Channel * getChannel (std::string name);
 
 
 };
