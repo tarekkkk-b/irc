@@ -127,6 +127,23 @@ void Server :: handleEvents()
 
 }
 
+bool isExistingChannel (std::string const & name)
+{
+    // std::vector<Channel *>::iterator = _channels.begin();
+    // for ()
+    return 1;
+}
+
+message Server::parseChannelCommand(std::vector<std::string> command, Client const & sender)
+{
+    std::string commands[] = { "JOIN", "PRIVMSG", "INVITE", "TOPIC", "KICK", "MODE" };
+    // check command syntax is valid
+    // check command syntax
+    // check if channel exists
+    // extract channel object
+    // pick the right command to perform from the channel commands
+
+}
 
 
 

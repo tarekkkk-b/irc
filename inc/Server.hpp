@@ -14,13 +14,13 @@
 # include <utility>
 # include "Channel.hpp"
 # include <map>
+# include "types.hpp"
 
 #define MAX_EVENTS 1024
 
 class Server
 {
     private:
-        typedef std::pair<std::string, std::vector <Client const *> > message;
         int _servPort;
         std::string _servPass;
         uintptr_t _servFd;
