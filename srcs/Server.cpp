@@ -1,4 +1,5 @@
 #include "../inc/Server.hpp"
+#include "Server.hpp"
 
 Server::Server() {}
 
@@ -145,8 +146,35 @@ message Server::parseChannelCommand(std::vector<std::string> command, Client con
 
 }
 
+static std::vector<std::string> splitWords(const std::string msg)
+{
+	std::istringstream iss(msg);
+	std::vector<std::string> words;
+	std::string temp;
 
+	while (iss >> temp)
+		words.push_back(temp);
+	return words;
+}
 
+message    Server::determinCommandSide(const std::string msg, Client const &sender)
+{
+    std::vector<std::string> words = splitWords(msg);
+    std::string commands[] = { "JOIN", "PRIVMSG", "INVITE", "TOPIC", "KICK", "MODE", "NAME", "USER", "PASS", "INVALID" };
+    int i = 0;
+    while (i < 10)
+    {
+        if (commands[i] == words[0])
+            break ;
+        i++;
+    }
+    return ((i >= 0 && i <= 5) ? this->parseChannelCommand(words, sender) : (i >= 6 && i <= 8) ? this->parseClientCommand(words, sender) : std::make_pair("421: " + sender.getName() + " " + words[0] + " " + ": Unknown Command.", std::vector<const Client *>(1, &sender)));
+}
+message Server::parseClientCommand(std::vector<std::string> command, Client const &sender)
+{
+    std::string commands[] = {"NAME", "USER", "PASS"};
+	return message();
+}
 
 // void Server:: registerEvents(int fd)
 // {

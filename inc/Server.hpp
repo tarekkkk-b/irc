@@ -30,6 +30,7 @@ class Server
         std::vector <int> clientsSocket;
         int clientcount;
         message parseChannelCommand(std::vector<std::string> command, Client const & sender);
+        message parseClientCommand(std::vector<std::string> command, Client const & sender);
         
         Server();
 
@@ -43,6 +44,8 @@ class Server
         void registerEvents(int fd , int16_t  filter);
         void handleEvents();
         void registerChannelCients(std::vector <int> channelClients);
+
+        message    Server::determinCommandSide(const std::string msg, Client const &sender)
 
         Channel * getChannel (std::string name);
 
