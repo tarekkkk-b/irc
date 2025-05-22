@@ -59,6 +59,16 @@
 		"tuple": "cpp",
 		"type_traits": "cpp",
 		"typeinfo": "cpp",
-		"utility": "cpp"
+		"utility": "cpp",
+		"clocale": "cpp",
+		"compare": "cpp",
+		"concepts": "cpp",
+		"deque": "cpp",
+		"map": "cpp",
+		"memory_resource": "cpp",
+		"numeric": "cpp",
+		"random": "cpp",
+		"numbers": "cpp",
+		"typeindex": "cpp"
 	}
 }
