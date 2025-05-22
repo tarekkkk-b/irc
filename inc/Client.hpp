@@ -36,6 +36,7 @@ class Client
 		std::string getName() const;
 		std::string getBuffer() const;
 		bool getPass() const;
+		int	getSocketFd() const;
 		
 		void setAuth(bool status);
 		void setBuffer(const std::string &message);

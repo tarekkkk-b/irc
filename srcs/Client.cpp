@@ -63,6 +63,11 @@ bool Client::getPass() const
 	return this->checked;
 }
 
+int Client::getSocketFd() const
+{
+	return this->socketFd;
+}
+
 std::string Client::getBuffer() const
 {
 	return this->buffer;
