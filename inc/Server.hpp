@@ -15,6 +15,7 @@
 # include "Channel.hpp"
 # include <map>
 # include "types.hpp"
+#include <cstdlib>
 
 #define MAX_EVENTS 1024
 
@@ -24,12 +25,19 @@ class Server
         int _servPort;
         std::string _servPass;
         uintptr_t _servFd;
-        std::map <std::string, Client * > clients_list;
+        std::map <int, Client * > clients_list;
         std:: map <std::string, Channel * > _channels;
         int kq;
         std::vector <int> clientsSocket;
         int clientcount;
-        message parseChannelCommand(std::vector<std::string> command, Client const & sender);
+
+        message parseChannelCommand(std::string message, Client const & sender);
+        message handleJoin(std::vector<std::string> command, Client const & sender);
+        message handlePrivMsg(std::string message, std::vector<std::string> command, Client const & sender);
+        message handleInvite(std::vector<std::string> command, Client const & sender);
+        message handleTopic(std::vector<std::string> command, Client const & sender);
+        message handleKick(std::vector<std::string> command, Client const & sender);
+        message handleMode(std::vector<std::string> command, Client const & sender);
         
         Server();
 
@@ -42,9 +50,11 @@ class Server
         void initServerSocket();
         void registerEvents(int fd , int16_t  filter);
         void handleEvents();
-        void registerChannelCients(std::vector <int> channelClients);
+        void registerChannelCients(std::vector <Client * const> channelClients);
 
         Channel * getChannel (std::string name);
+        Client * getClientByFd (int socketFd);
+        Client * getClientByNick (std::string name);
 
 
 };
