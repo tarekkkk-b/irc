@@ -107,9 +107,9 @@ message Client::setUser(std::vector<std::string> _username, const Server &server
 	return std::make_pair("", std::vector<const Client *>(1, this));
 }
 
-static bool checkInUse(std::string _nickname, const Server &server)
+static bool checkInUse(std::string _nickname, Server &server)
 {
-	if (!server->getClientByNick(_nickname))
+	if (!server.getClientByNick(_nickname))
 		return true;
 	return false;
 }
