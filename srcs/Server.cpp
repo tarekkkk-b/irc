@@ -1,4 +1,5 @@
 #include "../inc/Server.hpp"
+#include "Server.hpp"
 
 Server::Server() {}
 
@@ -109,6 +110,16 @@ std::string readLine(int fd)
 	
  }
 
+std::string Server::getServPass() const
+{
+    return this->_servPass;
+}
+
+void Server::authClient(Client &sender)
+{
+    if (!sender.getNick().empty() && !sender.getUser().empty() && sender.getPass())
+        sender.setAuth(true);
+}
 
 void Server :: handleEvents()
 {
@@ -361,8 +372,58 @@ message Server::handleMode(std::vector<std::string> command, Client const & send
 	}
 	return std::make_pair("403: <client> <channel> :No such mode\n", std::vector<const Client*>(1, &sender));
 }
+static std::vector<std::string> splitWords(const std::string msg)
+{
+	std::istringstream iss(msg);
+	std::vector<std::string> words;
+	std::string temp;
 
+	while (iss >> temp)
+		words.push_back(temp);
+	return words;
+}
 
+message    Server::determinCommandSide(const std::string msg, Client &sender)
+{
+    std::vector<std::string> words = splitWords(msg);
+    std::string error_msg = "421: " + sender.getName() + " " + words[0] + " " + ": Unknown Command.";
+    message error = std::make_pair("", std::vector<const Client *>(1, &sender));
+    std::string commands[] = { "JOIN", "PRIVMSG", "INVITE", "TOPIC", "KICK", "MODE", "NAME", "USER", "PASS", "INVALID" };
+    int i = 0;
+    while (i < 10)
+    {
+        if (commands[i] == words[0])
+            break ;
+        i++;
+    }
+    if (i = 9)
+        sender.setBuffer(error_msg);
+    return ((i >= 0 && i <= 5) ? this->parseChannelCommand(words, sender) : (i >= 6 && i <= 8) ? this->parseClientCommand(words, sender) : error);
+}
+
+message Server::parseClientCommand(std::vector<std::string> msg, Client &sender)
+{
+    std::string commands[] = { "NICK", "USER", "PASS" };
+    int i = 0;
+    while (i < 3)
+    {
+        if (commands[i] == msg[0])
+            break ;
+        i++;
+    }
+    switch (i)
+    {
+    case 0:
+        return (sender.setNick(msg, *this));
+    case 1:
+        return (sender.setUser(msg, *this));
+    case 2:
+        return (sender.setPass(msg, *this));
+    // case 3:
+    //     return (sender.setName(msg));
+    }
+	return message();
+}
 
 // void Server:: registerEvents(int fd)
 // {

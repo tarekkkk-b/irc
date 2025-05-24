@@ -38,6 +38,7 @@ class Server
         message handleTopic(std::vector<std::string> command, Client const & sender);
         message handleKick(std::vector<std::string> command, Client const & sender);
         message handleMode(std::vector<std::string> command, Client const & sender);
+        message parseClientCommand(std::vector<std::string> msg, Client &sender);
         
         Server();
 
@@ -51,6 +52,12 @@ class Server
         void registerEvents(int fd , int16_t  filter);
         void handleEvents();
         void registerChannelCients(std::vector <Client * const> channelClients);
+
+        std::string getServPass() const;
+
+        void    authClient(Client &sender);
+
+        message    Server::determinCommandSide(const std::string msg, Client &sender);
 
         Channel * getChannel (std::string name);
         Client * getClientByFd (int socketFd);

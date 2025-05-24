@@ -1,26 +1,53 @@
 #pragma once
 #include <iostream>
+#include <map>
+#include <vector>
+#include <string>
+#include <sstream>
+#include "Channel.hpp"
+#include "Server.hpp"
+#include "../inc/types.hpp"
 
 class Client
 {
 	private:
-	// std::string hostname;                // Host of the client (optional)
-	// std::string ipAddress;     //mand         // IP address (optional, useful for info)
-	std::string nickname;      //on start         // Set via NICK command
-	std::string username;       // on start        // Set via USER command
-	std::string realname;       // on start        // From USER command (after :)
-	std::string password;       // on start        // From PASS command
-	bool authenticated;    //once all is recieved       // True only if PASS + NICK + USER are all sent
-	bool registered;       // optional             // True after full registration (can join channels)
-	// bool operatorMode;                  // Whether the user is an operator (for channels)
-	
-	// std::string buffer;                 // For accumulating partial messages
-	// std::vector<std::string> channels;  // Names of channels this user is part of
-	
+		int socketFd;
+    	std::string nickname;
+    	std::string username;
+    	std::string realname;
+    	// std::string hostname;
+    	// std::string password;
+		std::string buffer;
+		bool checked;
+    	bool authenticated;
+
+    	std::vector<std::string> channels;
+
 	public:
-		int socketFd;       //mand                 // Unique socket for communication
+		Client();
 		Client(int _socketFd);
 		Client(const Client &copy);
 		Client &operator=(const Client &ref);
 		~Client();
+
+		bool getAuth() const;
+		std::string getUser() const;
+		std::string getNick() const;
+		std::string getName() const;
+		std::string getBuffer() const;
+		bool getPass() const;
+		int	getSocketFd() const;
+		
+		void setAuth(bool status);
+		void setBuffer(const std::string &message);
+		message setUser(std::vector<std::string> _username, const Server &server);
+		message setNick(const std::vector<std::string> _nickname, const Server &server);
+		message setName(const std::string _name);
+		message setPass(const std::vector<std::string> _pass, const Server &server);
+
+		// void joinChannel(const std::string _channelName) const;
+		void joinChannel(const std::vector<std::string> args, Server &server) const;
+		void leaveChannel(const std::string _channelName) const;
+
+		void parseUserCommands(const std::string msg);
 };
