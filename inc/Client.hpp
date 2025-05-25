@@ -8,6 +8,8 @@
 #include "Server.hpp"
 #include "../inc/types.hpp"
 
+class Server;
+
 class Client
 {
 	private:
@@ -41,8 +43,8 @@ class Client
 		void setAuth(bool status);
 		void setBuffer(const std::string &message);
 		message setUser(std::vector<std::string> _username, const Server &server);
-		message setNick(const std::vector<std::string> _nickname, const Server &server);
-		message setName(const std::string _name);
+		message setNick(const std::vector<std::string> _nickname, Server &server);
+		void setName(const std::string _name);
 		message setPass(const std::vector<std::string> _pass, const Server &server);
 
 		// void joinChannel(const std::string _channelName) const;

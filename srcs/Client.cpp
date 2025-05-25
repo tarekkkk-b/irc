@@ -1,5 +1,4 @@
 #include "../inc/Client.hpp"
-#include "Client.hpp"
 
 Client::Client()
 {
@@ -84,6 +83,7 @@ void Client::setBuffer(const std::string &message)
 }
 message Client::setUser(std::vector<std::string> _username, const Server &server)
 {
+	(void)server;
 	std::string params = "461: " + this->getUser() +  "PASS: Not enough parameters.";
 	std::string registered = "462: " +  this->getUser() + ": You may not reregister.";
 	std::string _realname = "";
@@ -96,7 +96,7 @@ message Client::setUser(std::vector<std::string> _username, const Server &server
 	else
 	{
 		this->username = _username[1];
-		for (int i = 4; i < _username.size(); i++)
+		for (size_t i = 4; i < _username.size(); i++)
 		{
 			if (_username[i][0] == ':')
 				_username[i].erase(0, 1);
@@ -118,7 +118,7 @@ static bool checkValidNick(std::string _nickame)
 {
 	if (_nickame.length() > 9)
 		return false;
-	for (ssize_t i = 0; i < _nickame.length(); i++)
+	for (size_t i = 0; i < _nickame.length(); i++)
 	{
 		if (!(std::isalnum(_nickame[i])) && !(std::isalpha(_nickame[i])))
 			return false;
@@ -126,7 +126,7 @@ static bool checkValidNick(std::string _nickame)
 	return true;
 }
 
-message Client::setNick(const std::vector<std::string> _nickname, const Server &server)
+message Client::setNick(const std::vector<std::string> _nickname, Server &server)
 {
 	std::string noNick = "431: " + this->getUser() + " : No nickname given";
 	std::string erroneus = "432: " + this->getUser() + _nickname[1] + " : Erroneus nickname";
@@ -144,9 +144,9 @@ message Client::setNick(const std::vector<std::string> _nickname, const Server &
 	return std::make_pair("", std::vector<const Client *>(1, this));
 }
 
-message Client::setName(const std::string _name)
+void Client::setName(const std::string _name)
 {
-
+	this->realname = _name;
 }
 
 message Client::setPass(const std::vector<std::string> _pass, const Server &server)
@@ -172,29 +172,29 @@ message Client::setPass(const std::vector<std::string> _pass, const Server &serv
 	return std::make_pair("", std::vector<const Client *>(1, this));
 }
 
-void	Client::joinChannel(const std::vector<std::string> args, Server &server) const
-{
-	if (args.size() == 3)
-	{
+// void	Client::joinChannel(const std::vector<std::string> args, Server &server) const
+// {
+// 	if (args.size() == 3)
+// 	{
 
-	}
-}
+// 	}
+// }
 
-void Client::leaveChannel(const std::string _channelName) const
-{
-	(void)_channelName;
-}
+// void Client::leaveChannel(const std::string _channelName) const
+// {
+// 	(void)_channelName;
+// }
 
-static std::vector<std::string> splitWords(const std::string msg)
-{
-	std::istringstream iss(msg);
-	std::vector<std::string> words;
-	std::string temp;
+// static std::vector<std::string> splitWords(const std::string msg)
+// {
+// 	std::istringstream iss(msg);
+// 	std::vector<std::string> words;
+// 	std::string temp;
 
-	while (iss >> temp)
-		words.push_back(temp);
-	return words;
-}
+// 	while (iss >> temp)
+// 		words.push_back(temp);
+// 	return words;
+// }
 
 // void Client::parseUserCommands(const std::string msg)
 // {
@@ -237,9 +237,9 @@ static std::vector<std::string> splitWords(const std::string msg)
 
 
 
-void check_commands(const std::string msg)
-{
-	std::vector<std::string> arguments = splitWords(msg);
-	std::string commands[5] = {"/NICK", "/PASS", "/JOIN", "/NAME", "/USER"};
+// void check_commands(const std::string msg)
+// {
+// 	std::vector<std::string> arguments = splitWords(msg);
+// 	std::string commands[5] = {"/NICK", "/PASS", "/JOIN", "/NAME", "/USER"};
 	
-}
+// }

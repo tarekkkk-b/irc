@@ -49,7 +49,7 @@ std::vector < Client const * > Channel::getRecievers(Client const * sender, int 
 	std::vector <Client const *> recievers;
 	for (unsigned long i = 0; i < _clients.size(); i++)
 	{
-		if ( !withSender && _clients[i]->socketFd == sender->socketFd)
+		if ( !withSender && _clients[i]->getSocketFd() == sender->getSocketFd())
 			continue;
 		recievers.push_back(_clients[i]);
 	}

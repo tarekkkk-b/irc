@@ -19,6 +19,8 @@
 
 #define MAX_EVENTS 1024
 
+class Channel;
+
 class Server
 {
     private:
@@ -57,7 +59,7 @@ class Server
 
         void    authClient(Client &sender);
 
-        message    Server::determinCommandSide(const std::string msg, Client &sender);
+        message determinCommandSide(const std::string msg, Client &sender);
 
         Channel * getChannel (std::string name);
         Client * getClientByFd (int socketFd);

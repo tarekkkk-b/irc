@@ -1,5 +1,4 @@
 #include "../inc/Server.hpp"
-#include "Server.hpp"
 
 Server::Server() {}
 
@@ -176,7 +175,7 @@ Channel * Server::getChannel (std::string name)
 Client * Server::getClientByNick (std::string name)
 {
 	for (std::map<int, Client*>::iterator it = clients_list.begin(); it != clients_list.end(); ++it) {
-		if (it->second && it->second->getNickname() == name)
+		if (it->second && it->second->getNick() == name)
 			return it->second;
 	}
 	return NULL;
@@ -188,6 +187,17 @@ Client* Server::getClientByFd(int socketFd)
 	if (client != clients_list.end())
 		return client->second;
 	return NULL;
+}
+
+static std::vector<std::string> splitWords(const std::string msg)
+{
+	std::istringstream iss(msg);
+	std::vector<std::string> words;
+	std::string temp;
+
+	while (iss >> temp)
+		words.push_back(temp);
+	return words;
 }
 
 message Server::parseChannelCommand(std::string message, Client const & sender)
@@ -372,16 +382,6 @@ message Server::handleMode(std::vector<std::string> command, Client const & send
 	}
 	return std::make_pair("403: <client> <channel> :No such mode\n", std::vector<const Client*>(1, &sender));
 }
-static std::vector<std::string> splitWords(const std::string msg)
-{
-	std::istringstream iss(msg);
-	std::vector<std::string> words;
-	std::string temp;
-
-	while (iss >> temp)
-		words.push_back(temp);
-	return words;
-}
 
 message    Server::determinCommandSide(const std::string msg, Client &sender)
 {
@@ -396,9 +396,9 @@ message    Server::determinCommandSide(const std::string msg, Client &sender)
             break ;
         i++;
     }
-    if (i = 9)
+    if (i == 9)
         sender.setBuffer(error_msg);
-    return ((i >= 0 && i <= 5) ? this->parseChannelCommand(words, sender) : (i >= 6 && i <= 8) ? this->parseClientCommand(words, sender) : error);
+    return ((i >= 0 && i <= 5) ? this->parseChannelCommand(msg, sender) : (i >= 6 && i <= 8) ? this->parseClientCommand(words, sender) : error);
 }
 
 message Server::parseClientCommand(std::vector<std::string> msg, Client &sender)
