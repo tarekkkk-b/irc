@@ -19,9 +19,9 @@ class Channel
 		bool hasPassword;
 		bool hasUsersLimit;
 
-		std::vector < Client const * > _clients;
-		std::vector <Client const * > _operators;
-		std::vector < Client const * > _invitations;
+		std::vector < Client * > _clients;
+		std::vector <Client * > _operators;
+		std::vector < Client * > _invitations;
 		Channel();
 
 	public:
@@ -31,40 +31,41 @@ class Channel
 		Channel & operator = (const Channel & rhs);
 		~Channel();
 
-		message init(Client const * channelCreator);
+		std::vector <Client * > init(Client * channelCreator);
 		std::string getName() const;
-		std::vector < Client const * > getRecievers(Client const * sender, int withSender);
+		std::vector < Client * > getRecievers(Client * sender, int withSender);
 		
-		message	addClient(Client const * client, std::string password = "");
-		message	removeClient(Client const * commander, Client const * client);
+		std::vector < Client * > addClient(Client * client, std::string password = "");
+		std::vector < Client * > removeClient(Client * commander, Client * client);
 		
-		message	inviteClient(Client const * commander, Client const * client);
-		void	uninviteClient(Client const * client);
+		std::vector < Client * > inviteClient(Client * commander, Client * client);
+		void	uninviteClient(Client * client);
 		
-		message	addOperator(Client const * commander, Client const * client);
-		message	removeOperator(Client const * commander, Client const * client);
+		std::vector < Client * > addOperator(Client * commander, Client * client);
+		std::vector < Client * > removeOperator(Client * commander, Client * client);
 		
-		message	setPassword(Client const * commander, std::string password); 
-		message	unsetPassword(Client const * commander); 
+		std::vector < Client * > setPassword(Client * commander, std::string password); 
+		std::vector < Client * > unsetPassword(Client * commander); 
 		
-		message	setTopic(Client const * commander, std::string topic); 
-		message	getTopic(Client const * commander); 
-		// message	unsetTopic(Client const * commander);
+		std::vector < Client * > setTopic(Client * commander, std::string topic); 
+		std::vector < Client * > getTopic(Client * commander); 
 
-		message	setTopicRestrict(Client const * commander); 
-		message	unsetTopicRestrict(Client const * commander); 
+		std::vector < Client * > setTopicRestrict(Client * commander); 
+		std::vector < Client * > unsetTopicRestrict(Client * commander); 
 
-		message	setInviteOnly(Client const * commander); 
-		message	unsetInviteOnly(Client const * commander);
+		std::vector < Client * > setInviteOnly(Client * commander); 
+		std::vector < Client * > unsetInviteOnly(Client * commander);
 
-		message	setUserLimit(Client const * commander, int limit);
-		message	unsetUserLimit(Client const * commander);
+		std::vector < Client * > setUserLimit(Client * commander, int limit);
+		std::vector < Client * > unsetUserLimit(Client * commander);
 		
 		bool	clientIsMember(Client const *client) const;
 		bool	clientIsOperator(Client const *client) const;
 		bool	clientIsInvited(Client const *client) const;
 
-		message sendToClients(std::string text, Client const * commander);
+		std::vector < Client * > sendToClients(std::string text, Client * commander);
+		std::vector <Client * > setClientsBuffer(std::vector<Client * > clients, std::string message);
+
 };
 
 #endif

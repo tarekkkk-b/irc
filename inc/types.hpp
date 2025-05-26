@@ -6,6 +6,6 @@
 
 class Client;
 
-typedef std::pair<std::string, std::vector<const Client*> > message;
+typedef std::pair<std::string, std::vector< Client * > > message;
 
 #endif

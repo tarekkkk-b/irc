@@ -33,14 +33,14 @@ class Server
         std::vector <int> clientsSocket;
         int clientcount;
 
-        message parseChannelCommand(std::string message, Client const & sender);
-        message handleJoin(std::vector<std::string> command, Client const & sender);
-        message handlePrivMsg(std::string message, std::vector<std::string> command, Client const & sender);
-        message handleInvite(std::vector<std::string> command, Client const & sender);
-        message handleTopic(std::vector<std::string> command, Client const & sender);
-        message handleKick(std::vector<std::string> command, Client const & sender);
-        message handleMode(std::vector<std::string> command, Client const & sender);
-        message parseClientCommand(std::vector<std::string> msg, Client &sender);
+        std::vector <Client * > parseChannelCommand(std::string message, Client  & sender);
+        std::vector <Client * > handleJoin(std::vector<std::string> command, Client  & sender);
+        std::vector <Client * > handlePrivMsg(std::string message, std::vector<std::string> command, Client  & sender);
+        std::vector <Client * > handleInvite(std::vector<std::string> command, Client  & sender);
+        std::vector <Client * > handleTopic(std::vector<std::string> command, Client  & sender);
+        std::vector <Client * > handleKick(std::vector<std::string> command, Client  & sender);
+        std::vector <Client * > handleMode(std::vector<std::string> command, Client  & sender);
+        // std::vector <Client * > parseClientCommand(std::vector<std::string> msg, Client &sender);
         
         Server();
 
@@ -53,17 +53,19 @@ class Server
         void initServerSocket();
         void registerEvents(int fd , int16_t  filter);
         void handleEvents();
-        void registerChannelCients(std::vector <Client * const> channelClients);
+        void registerChannelCients(std::vector <Client * > channelClients);
 
         std::string getServPass() const;
 
         void    authClient(Client &sender);
 
-        message determinCommandSide(const std::string msg, Client &sender);
+        // std::vector<Client * > determinCommandSide(const std::string msg, Client &sender);
 
         Channel * getChannel (std::string name);
         Client * getClientByFd (int socketFd);
         Client * getClientByNick (std::string name);
+
+        std::vector <Client * >    setClientsBuffer(std::vector<Client * > clients, std::string message);
 
 
 };

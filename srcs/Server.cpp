@@ -100,7 +100,7 @@ std::string readLine(int fd)
 	return line;
 }
 
- void Server :: registerChannelCients(std::vector <Client * const> channelClients)
+ void Server :: registerChannelCients(std::vector <Client * > channelClients)
  {
 	for( unsigned long i = 0; i < channelClients.size();i++)
 	{
@@ -126,7 +126,7 @@ void Server :: handleEvents()
 	std::cout<<"im here in handle events"<<"\n";
 	registerEvents(this -> _servFd,EVFILT_READ);
 	struct kevent ev[MAX_EVENTS];
-	message toSend;
+	std::vector <Client *> toSend;
 	while (true)
 	{
 	   int  en =  kevent(this->kq, NULL, 0, ev,MAX_EVENTS , NULL) ;
@@ -147,7 +147,7 @@ void Server :: handleEvents()
 					clients_list[event.ident] = new Client(event.ident);
 
 				toSend = parseChannelCommand(text, *getClientByFd(event.ident));
-				std::cout << toSend.first << std::endl; 
+				// std::cout << toSend.first << std::endl; 
 				// std::cout<<message<<std::endl;
 				// this will be passes to maha in which she will parse it  and do the command  and the continue if it is not a message
 				// if it is a message i will registerChannelCients(std::vector <int> channelClients)
@@ -200,9 +200,9 @@ static std::vector<std::string> splitWords(const std::string msg)
 	return words;
 }
 
-message Server::parseChannelCommand(std::string message, Client const & sender)
+std::vector <Client * > Server::parseChannelCommand(std::string message, Client & sender)
 {
-	std::vector<std::string> command = splitString(message);
+	std::vector<std::string> command = splitWords(message);
 	std::string commands[] = { "JOIN", "PRIVMSG", "INVITE", "TOPIC", "KICK", "MODE" };
 
 	std::cout << std::endl;
@@ -219,15 +219,16 @@ message Server::parseChannelCommand(std::string message, Client const & sender)
 	if (command[0] == "MODE")
 		return (command.erase(command.begin()), handleMode(command, sender));
 	else
-	return std::make_pair("421: <client> <command> :Unknown command\n", std::vector<const Client*>(1, &sender));
-
-	// message["hi there"] = std::vector<const Client *>(1, &sender);
+		return setClientsBuffer(std::vector< Client*>(1, &sender),
+			"421: " + sender.getNick() + " " + command[0] + " :Unknown command\n");
 }
 
-message Server::handleJoin(std::vector<std::string> command, Client const & sender)
+std::vector <Client * > Server::handleJoin(std::vector<std::string> command, Client & sender)
 {
+	// return setClientsBuffer(std::vector< Client*>(1, &sender), "421: " + sender.getNick() + " " + command[0] + " :Unknown command\n");
 	if (command.size() < 1 || command.size() > 2)
-		return std::make_pair("461: <client> <command> :Not enough parameters", std::vector<const Client*>(1, &sender));
+		return setClientsBuffer(std::vector< Client*>(1, &sender),
+			"461: " + sender.getNick() + " " + command[0] + " :Not enough parameters\n");
 	if (command[0][0] == '#')
 	{
 		command[0].erase(0, 1);
@@ -242,32 +243,35 @@ message Server::handleJoin(std::vector<std::string> command, Client const & send
 			std::cout << "channel exists\n";
 			if (command.size() == 2)
 				return channel->addClient(& sender, command[1]);
-			return channel->addClient(& sender);
-			
+			return channel->addClient(& sender);	
 		}
 	}
-	return std::make_pair("invalid syntax\n", std::vector<const Client*>(1, &sender));
+	return setClientsBuffer(std::vector< Client*>(1, &sender),
+		"403: " + sender.getNick() + " " + command[0] + " :No such channel\n");
 }
 	
-message Server::handlePrivMsg(std::string msg, std::vector<std::string> command, Client const & sender) // should I send the whole message? or without the client?
+std::vector <Client * > Server::handlePrivMsg(std::string msg, std::vector<std::string> command, Client & sender) // should I send the whole message? or without the client?
 {
 	if (command.size() == 0)
-		return std::make_pair("461: <client> <command> :Not enough parameters", std::vector<const Client*>(1, &sender));
+		return setClientsBuffer(std::vector< Client*>(1, &sender),
+			"411: " + sender.getNick() + " :No recipient given (PRIVMSG)\n");
 	if (command[0][0] == '#')
 	{
 		command[0].erase(0, 1);
 		Channel * channel = getChannel(command[0]);
 		if (channel == NULL)
-			return std::make_pair("403: <client> <channel> :No such channel\n", std::vector<const Client*>(1, &sender));
+			return setClientsBuffer(std::vector< Client*>(1, &sender),
+				"403: " + sender.getNick() + " " + command[0] + " :No such channel\n");
 		return channel->sendToClients(msg, &sender);
 	}
 	else
 	{
-		Client const * reciever = getClientByNick(command[0]);
+		Client * reciever = getClientByNick(command[0]);
 		if (!reciever)
-			return std::make_pair("406: <client> <nickname> :There was no such nickname", std::vector<const Client*>(1, &sender));
-		
-		return std::make_pair(msg, std::vector<const Client*>(1, reciever));
+			return setClientsBuffer(std::vector< Client*>(1, &sender),
+				"401: " + sender.getNick() + " " + command[0] + " :No such nick/channel\n");
+		return setClientsBuffer(std::vector< Client*>(1, reciever),
+			sender.getNick() + " : " + msg);		
 	}
 
 	// NICK NAME ERR_NOSUCHNICK (401) ERR_NORECIPIENT (411)
@@ -276,74 +280,88 @@ message Server::handlePrivMsg(std::string msg, std::vector<std::string> command,
 	// TEXT ERR_NOTEXTTOSEND (412)
 }
 
-message Server::handleInvite(std::vector<std::string> command, Client const & sender)
+std::vector <Client * > Server::handleInvite(std::vector<std::string> command, Client & sender)
 {
 	// INVITE NICK #CHANNEL
 	
 	if (command.size() != 2)
-	return std::make_pair("461: <client> <command> :Not enough parameters", std::vector<const Client*>(1, &sender));
+		return setClientsBuffer(std::vector< Client*>(1, &sender),
+			"461: " + sender.getNick() + " " + command[0] + " :Not enough parameters\n");
 	if (!getClientByNick(command[0]))
-	return std::make_pair("406: <client> <nickname> :There was no such nickname", std::vector<const Client*>(1, &sender));
+		return setClientsBuffer(std::vector< Client*>(1, &sender),
+			"406: " + sender.getNick() + " " + command[0] + " :There was no such nickname\n");
 	if (command[1][0] == '#')
 	{
 		command[1].erase(0, 1);
 		Channel *channel = getChannel(command[1]);
 		if (channel == NULL)
-			return std::make_pair("403: <client> <channel> :No such channel", std::vector<const Client*>(1, &sender));
+			return setClientsBuffer(std::vector< Client*>(1, &sender),
+				"403: " + sender.getNick() + " " + command[1] + " :No such channel\n");
 		else
 			return channel->inviteClient(&sender, getClientByNick(command[0]));
 	}
-	return std::make_pair("421: <client> <command> :Unknown command\n", std::vector<const Client*>(1, &sender));
+	return setClientsBuffer(std::vector< Client*>(1, &sender),
+		"401: " + sender.getNick() + " " + command[0] + " :No such nick/channel\n");
 }
 	
-message Server::handleTopic(std::vector<std::string> command, Client const & sender)
+std::vector <Client * > Server::handleTopic(std::vector<std::string> command, Client & sender)
 {
 	Channel * channel = NULL;
 	if (command.size() == 0)
-		return std::make_pair("461: <client> <command> :Not enough parameters\n", std::vector<const Client*>(1, &sender));
+		return setClientsBuffer(std::vector< Client*>(1, &sender),
+			"461: " + sender.getNick() + " " + command[0] + " :Not enough parameters\n");
 	if (command[0][0] == '#')
 	{
 		std::cout << "this is a channel!\n";
 		command[0].erase(0, 1);
 		channel = getChannel(command[0]);
 		if (channel == NULL)
-			return std::make_pair("403: <client> <channel> :No such channel\n", std::vector<const Client*>(1, &sender));
+			return setClientsBuffer(std::vector< Client*>(1, &sender),
+				"403: " + sender.getNick() + " " + command[0] + " :No such channel\n");
 		if	(command.size () == 1) // viewing a topic
 			return channel->getTopic(&sender);
 		else if (command.size() == 2) // changing a topic of a channel
 			return channel->setTopic(&sender, command[1]);
 	}
-	return std::make_pair("461: <client> <command> :Not enough parameters", std::vector<const Client*>(1, &sender));
+	return setClientsBuffer(std::vector< Client*>(1, &sender),
+		"401: " + sender.getNick() + " " + command[0] + " :No such nick/channel\n");
 }
-message Server::handleKick(std::vector<std::string> command, Client const & sender)
+std::vector <Client * > Server::handleKick(std::vector<std::string> command, Client & sender)
 {
 	if (command.size() != 2)
-		return std::make_pair("461: <client> <command> :Not enough parameters", std::vector<const Client*>(1, &sender));
-		if (command[0][0] == '#')
-		{
-			command[0].erase(0, 1);
-			Channel *channel = getChannel(command[0]);
-			if (channel == NULL)
-				return std::make_pair("403: <client> <channel> :No such channel", std::vector<const Client*>(1, &sender));
-			else if (!getClientByNick(command[1]))
-				return std::make_pair("406: <client> <nickname> :There was no such nickname", std::vector<const Client*>(1, &sender));
-			else
-				return channel->removeClient(&sender, getClientByNick(command[1]));
-		}
-	return std::make_pair("401: <client> <nickname> :No such nick/channel", std::vector<const Client*>(1, &sender));
+		return setClientsBuffer(std::vector< Client*>(1, &sender),
+			"461: " + sender.getNick() + " " + command[0] + " :Not enough parameters\n");
+	if (command[0][0] == '#')
+	{
+		command[0].erase(0, 1);
+		Channel *channel = getChannel(command[0]);
+		if (channel == NULL)
+			return setClientsBuffer(std::vector< Client*>(1, &sender),
+				"403: " + sender.getNick() + " " + command[0] + " :No such channel\n");
+		else if (!getClientByNick(command[1]))
+			return setClientsBuffer(std::vector< Client*>(1, &sender),
+				"406: " + sender.getNick() + " " + command[1] + " :There was no such nickname\n");
+		else
+			return channel->removeClient(&sender, getClientByNick(command[1]));
+	}
+	return setClientsBuffer(std::vector< Client*>(1, &sender),
+		"401: " + sender.getNick() + " " + command[0] + " :No such nick/channel\n");
 }
 	
-message Server::handleMode(std::vector<std::string> command, Client const & sender)
+std::vector <Client * > Server::handleMode(std::vector<std::string> command, Client & sender)
 {
 	if (command.size() < 2)
-		return std::make_pair("461: <client> <channel> :No such mode", std::vector<const Client*>(1, &sender));
+		return setClientsBuffer(std::vector< Client*>(1, &sender),
+			"461: " + sender.getNick() + " " + command[0] + " :Not enough parameters\n");
 
 	if (command[0][0] != '#')
-		return std::make_pair("401: <client> <nickname> :No such nick/channel", std::vector<const Client*>(1, &sender));
+		return setClientsBuffer(std::vector< Client*>(1, &sender),
+			"401: " + sender.getNick() + " " + command[0] + " :No such nick/channel\n");
 	command[0].erase(0, 1);
 	Channel *channel = getChannel(command[0]);
 	if (channel == NULL)
-		return std::make_pair("403: <client> <channel> :No such channel", std::vector<const Client*>(1, &sender));
+		return setClientsBuffer(std::vector< Client*>(1, &sender),
+			"403: " + sender.getNick() + " " + command[0] + " :No such channel\n");
 	if (command.size() == 2 && command[1].size() == 2)
 	{
 		if (command[1][0] == '+' && command[1][1] == 'i')
@@ -368,7 +386,8 @@ message Server::handleMode(std::vector<std::string> command, Client const & send
 			Client * client = getClientByNick(command[2]);
 			if (client)
 				return channel->addOperator(&sender, client);
-			return std::make_pair("406: <client> <nickname> :There was no such nickname\n", std::vector<const Client*>(1, &sender));
+			return setClientsBuffer(std::vector< Client*>(1, &sender),
+				"406: " + sender.getNick() + " " + command[2] + " :There was no such nickname\n");
 		}
 		if (command[1][0] == '+' && command[1][1] == 'l')
 			return channel->setUserLimit (&sender, atoi(command[2].c_str()));
@@ -377,79 +396,61 @@ message Server::handleMode(std::vector<std::string> command, Client const & send
 			Client * client = getClientByNick(command[2]);
 			if (client)
 				return channel->removeOperator(&sender, client);
-			return std::make_pair("406: <client> <nickname> :There was no such nickname\n", std::vector<const Client*>(1, &sender));
+			return setClientsBuffer(std::vector< Client*>(1, &sender),
+				"406: " + sender.getNick() + " " + command[2] + " :There was no such nickname\n");
 		}
 	}
-	return std::make_pair("403: <client> <channel> :No such mode\n", std::vector<const Client*>(1, &sender));
+	return setClientsBuffer(std::vector< Client*>(1, &sender),
+		"472: " + sender.getNick() + " " + command[0] + " :is unknown mode char to me for channel\n");
 }
 
-message    Server::determinCommandSide(const std::string msg, Client &sender)
-{
-    std::vector<std::string> words = splitWords(msg);
-    std::string error_msg = "421: " + sender.getName() + " " + words[0] + " " + ": Unknown Command.";
-    message error = std::make_pair("", std::vector<const Client *>(1, &sender));
-    std::string commands[] = { "JOIN", "PRIVMSG", "INVITE", "TOPIC", "KICK", "MODE", "NAME", "USER", "PASS", "INVALID" };
-    int i = 0;
-    while (i < 10)
-    {
-        if (commands[i] == words[0])
-            break ;
-        i++;
-    }
-    if (i == 9)
-        sender.setBuffer(error_msg);
-    return ((i >= 0 && i <= 5) ? this->parseChannelCommand(msg, sender) : (i >= 6 && i <= 8) ? this->parseClientCommand(words, sender) : error);
-}
-
-message Server::parseClientCommand(std::vector<std::string> msg, Client &sender)
-{
-    std::string commands[] = { "NICK", "USER", "PASS" };
-    int i = 0;
-    while (i < 3)
-    {
-        if (commands[i] == msg[0])
-            break ;
-        i++;
-    }
-    switch (i)
-    {
-    case 0:
-        return (sender.setNick(msg, *this));
-    case 1:
-        return (sender.setUser(msg, *this));
-    case 2:
-        return (sender.setPass(msg, *this));
-    // case 3:
-    //     return (sender.setName(msg));
-    }
-	return message();
-}
-
-// void Server:: registerEvents(int fd)
+// std::vector <Client * >    Server::determinCommandSide(const std::string msg, Client &sender)
 // {
-	
-
-//     // struct kevent {
-//     //     uintptr_t  ident;     // Identifier (e.g. FD you're watching)
-//     //     int16_t    filter;    // What kind of event (e.g. EVFILT_READ)
-//     //     uint16_t   flags;     // What to do with it (EV_ADD, EV_DELETE, etc.)
-//     //     uint32_t   fflags;    // Extra filter-specific options (rarely used for sockets)
-//     //     intptr_t   data;      // Info about the event (e.g. bytes ready to read)
-//     //     void      *udata;     // Your custom data (context pointer, optional)
-//     // };
-//     struct kevent ev;
-//     // tell the kernal what to watch is like im telling the kernal please watch for me any read event on the srever socket
-//     EV_SET(&ev, fd, EVFILT_READ, EV_ADD, 0, 0, NULL);
-//     // the events your getting please register for the in the kq
-//     // int kevent(int kq, 
-//     //    const struct kevent *changelist, int nchanges, 
-//     //     struct kevent *eventlist, int nevents, 
-//     //     const struct timespec *timeout);
-//     if (kevent(this->kq, &ev, 1, NULL, 0, NULL) == -1)
+//     std::vector<std::string> words = splitWords(msg);
+//     std::string error_msg = "421: " + sender.getName() + " " + words[0] + " " + ": Unknown Command.";
+//     message error = std::make_pair("", std::vector< Client *>(1, &sender));
+//     std::string commands[] = { "JOIN", "PRIVMSG", "INVITE", "TOPIC", "KICK", "MODE", "NAME", "USER", "PASS", "INVALID" };
+//     int i = 0;
+//     while (i < 10)
 //     {
-//         perror("kevent register listen_fd");
-//         exit(EXIT_FAILURE);
+//         if (commands[i] == words[0])
+//             break ;
+//         i++;
 //     }
-	
+//     if (i == 9)
+//         sender.setBuffer(error_msg);
+//     return ((i >= 0 && i <= 5) ? this->parseChannelCommand(msg, sender) : (i >= 6 && i <= 8) ? this->parseClientCommand(words, sender) : error);
 // }
-  // for std::cout
+
+// std::vector <Client * > Server::parseClientCommand(std::vector<std::string> msg, Client &sender)
+// {
+//     std::string commands[] = { "NICK", "USER", "PASS" };
+//     int i = 0;
+//     while (i < 3)
+//     {
+//         if (commands[i] == msg[0])
+//             break ;
+//         i++;
+//     }
+//     switch (i)
+//     {
+//     case 0:
+//         return (sender.setNick(msg, *this));
+//     case 1:
+//         return (sender.setUser(msg, *this));
+//     case 2:
+//         return (sender.setPass(msg, *this));
+//     // case 3:
+//     //     return (sender.setName(msg));
+//     }
+// 	return message();
+// }
+
+std::vector <Client * > Server::setClientsBuffer(std::vector<Client * > clients, std::string message)
+{
+	for (std::vector<Client * >::iterator it = clients.begin(); it != clients.end(); ++it)
+	{
+		(*it)->setBuffer(message);
+	}
+	return clients;
+}

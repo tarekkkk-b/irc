@@ -31,22 +31,24 @@ Channel::~Channel()
 	// I might have to free all _clients and _operators
 }
 
-message Channel::init(Client const * channelCreator)
+std::vector <Client * > Channel::init(Client * channelCreator)
 {
 	if (_operators.size() != 0)
-		return std::make_pair("client is already there!\n", std::vector<const Client*>(1, channelCreator));
+		return setClientsBuffer(std::vector<Client *>(1, channelCreator),
+			"channel already exists\n");
 	addClient(channelCreator);
 	addOperator(channelCreator, channelCreator);
-	return std::make_pair("channel created successfully\n", std::vector<const Client*>(1, channelCreator));
+	return setClientsBuffer(std::vector<Client *>(1, channelCreator),
+			channelCreator->getNick() + " has joined the channel\n");
 }
 std::string Channel::getName() const
 {
 	return this->_name;
 }
 
-std::vector < Client const * > Channel::getRecievers(Client const * sender, int withSender)
+std::vector < Client * > Channel::getRecievers(Client * sender, int withSender)
 {
-	std::vector <Client const *> recievers;
+	std::vector <Client * > recievers;
 	for (unsigned long i = 0; i < _clients.size(); i++)
 	{
 		if ( !withSender && _clients[i]->getSocketFd() == sender->getSocketFd())
@@ -56,90 +58,110 @@ std::vector < Client const * > Channel::getRecievers(Client const * sender, int 
 	return recievers;
 }
 
-message    Channel::addClient(Client const * client, std::string password)
+std::vector <Client * >    Channel::addClient(Client * client, std::string password)
 {
 	if (clientIsMember(client))
-		return std::make_pair("client is already there!\n", std::vector<const Client*>(1, client));
+		return setClientsBuffer(std::vector<Client *>(1, client),
+			"443: " + client->getNick() + " " + this->_name + " :is already on channel\n");
+
 	if (this->hasUsersLimit && _clients.size() >= (unsigned long) usersLimit)
-		return std::make_pair("471: <client> <channel> :Cannot join channel (+l)\n", std::vector<const Client*>(1, client));
+		return setClientsBuffer(std::vector<Client *>(1, client),
+			"471: " + client->getNick() + " " + this->_name + " :Cannot join channel (+l)\n");
 	else if (this->isInviteOnly && !clientIsInvited(client))
-		return std::make_pair("473: <client> <channel> :Cannot join channel (+i)\n",std::vector<const Client*>(1, client));
+		return setClientsBuffer(std::vector<Client *>(1, client),
+			"473: " + client->getNick() + " " + this->_name + " :Cannot join channel (+i)\n");
 	else if (this->hasPassword && password != this->_password)
-		return std::make_pair("475: <client> <channel> :Cannot join channel (+k)\n", std::vector<const Client*>(1, client));
-		else
-		{
-			std::string message = std::string("<client->socketFd>") + std::string(" ") + this->_name + std::string(" :");
-			if (clientIsInvited(client))
+		return setClientsBuffer(std::vector<Client *>(1, client),
+			"475: " + client->getNick() + " " + this->_name + " :Cannot join channel (+k)\n");
+	else
+	{
+		std::ostringstream oss;
+		oss << client->getSocketFd() << " " << this->_name << " :";
+		std::string message = oss.str();
+
+		if (clientIsInvited(client))
 			uninviteClient(client);
-			this->_clients.push_back(client);
-			if (this->isTopicRestricted)
+		this->_clients.push_back(client);
+		if (this->isTopicRestricted)
 			message += this->_topic + "\n";
-			else
-				message += "No topic is set\n";
-			message += "<client> <symbol> <channel> :[prefix]<nick>{ [prefix]<nick>}\n"; // list of clients in the future
-			return std::make_pair(message, std::vector<const Client*>(1, client));
+		else
+			message += "No topic is set\n";
+		message += client->getNick() + " " + this->_name + " :has joined the channel\n";
+		setClientsBuffer(std::vector< Client*>(1, client), message);
+		setClientsBuffer(getRecievers(client, 0), client->getNick() + " " + this->_name + " has joined the channel\n");
+		return getRecievers(client, 1);
 	}
 }
 
-message    Channel::removeClient(Client const * commander, Client const * client)
+std::vector <Client * >    Channel::removeClient(Client * commander, Client * client)
 {
 	if (!clientIsOperator(commander))
-		return std::make_pair("482: <client> <channel> :Permission Denied- You're not channel operator\n", std::vector<const Client*>(1, commander));
+		return setClientsBuffer(std::vector<Client *>(1, commander),
+			"482: " + commander->getNick() + " " + this->_name + " :Permission Denied- You're not channel operator\n");
 
-	std::vector<Client const * >::iterator clientToBeRemoved = std::find(_clients.begin(), _clients.end(), client);
+	std::vector<Client * >::iterator clientToBeRemoved = std::find(_clients.begin(), _clients.end(), client);
 	if (clientToBeRemoved != _clients.end())
 		_clients.erase(clientToBeRemoved);
 
 	clientToBeRemoved = std::find(_operators.begin(), _operators.end(), client);
 	if (clientToBeRemoved != _operators.end())
 		_operators.erase(clientToBeRemoved);
-	return std::make_pair("482: <client> <channel> :Permission Denied- You're not channel operator\n", std::vector<const Client*>(1, commander));
+	return setClientsBuffer(std::vector<Client *>(1, commander),
+			"client " + client->getNick() + " " + this->_name + " has been removed from channel\n");
 }
 
-message    Channel::inviteClient(Client const * commander, Client const * client)
+std::vector <Client * >    Channel::inviteClient(Client * commander, Client * client)
 {
 	
 	if (this->isInviteOnly && !clientIsOperator(commander))
-		return std::make_pair("482: <client> <channel> :You're not channel operator\n", std::vector<const Client*>(1, commander));
+		return setClientsBuffer(std::vector<Client *>(1, commander),
+			"482: " + commander->getNick() + " " + this->_name + " :Permission Denied- You're not channel operator\n");
 	else if (!clientIsMember(commander))
-		return std::make_pair("442: <client> <channel> :You're not on that channel\n", std::vector<const Client*>(1, commander));
+		return setClientsBuffer(std::vector<Client *>(1, commander),
+			"442: " + commander->getNick() + " " + this->_name + " :You're not on that channel\n");
 	else if (clientIsMember(client))
-		return std::make_pair("443: <client> <nick> <channel> :is already on channel", std::vector<const Client*>(1, commander));
+		return setClientsBuffer(std::vector<Client *>(1, commander),
+			"443: " + client->getNick() + " " + this->_name + " :is already on channel\n");
 
 	this->_invitations.push_back(client);
-	return std::make_pair("341: <client> <nick> <channel>\n", std::vector<const Client*>(1, commander));
+	return setClientsBuffer(std::vector<Client *>(1, commander),
+			"341: " + commander->getNick() + " " + client->getNick() + " " + this->_name + " :has been invited to channel\n");
 }
 
-void    Channel::uninviteClient(Client const * client)
+void    Channel::uninviteClient(Client * client)
 {
-		std::vector<Client const * >::iterator invitationToBeRemoved = std::find(_invitations.begin(), _invitations.end(), client);
+		std::vector<Client * >::iterator invitationToBeRemoved = std::find(_invitations.begin(), _invitations.end(), client);
 		if (invitationToBeRemoved != _invitations.end())
 			_invitations.erase(invitationToBeRemoved);
 }
 
-message    Channel::addOperator(Client const * commander, Client const * client)
+std::vector <Client * >    Channel::addOperator(Client * commander, Client * client)
 {
 	if (clientIsOperator(commander) || _operators.size() == 0)
 	{
 		this->_operators.push_back(client);
-		return std::make_pair(std::string ("client <nickname> is now an operator"), std::vector<const Client*>(1, commander));
+		return setClientsBuffer(getRecievers(commander, 1),
+			"client " + client->getNick() + " is now an operator\n");
 	}
-	return std::make_pair("482: <client> <channel> :Permission Denied- You're not channel operator\n", std::vector<const Client*>(1, commander));
+	return setClientsBuffer(std::vector<Client *>(1, commander),
+			"482: " + commander->getNick() + " " + this->_name + " :Permission Denied- You're not channel operator\n");
 }
 
-message    Channel::removeOperator(Client const * commander, Client const * client)
+std::vector <Client * >    Channel::removeOperator(Client * commander, Client * client)
 {
 	if (!clientIsOperator(commander))
-		return std::make_pair("482: <client> <channel> :Permission Denied- You're not channel operator\n", std::vector<const Client*>(1, commander));
+		return setClientsBuffer(std::vector<Client *>(1, commander),
+			"482: " + commander->getNick() + " " + this->_name + " :Permission Denied- You're not channel operator\n");
 
-	std::vector<Client const* >::iterator clientToBeRemoved = std::find(_operators.begin(), _operators.end(), client);
+	std::vector<Client * >::iterator clientToBeRemoved = std::find(_operators.begin(), _operators.end(), client);
 	if (clientToBeRemoved != _operators.end())
 	{
 		_operators.erase(clientToBeRemoved);
-		return std::make_pair("operator removed successfully\n",std::vector<const Client*>(1, commander));
+		return setClientsBuffer(getRecievers(commander, 1),
+			"client " + client->getNick() + " is no longer an operator\n");
 	}
-	return std::make_pair("operator not found\n",std::vector<const Client*>(1, commander));
-	
+	return setClientsBuffer(std::vector<Client *>(1, commander),
+			"operator " + client->getNick() + " " + this->_name + " :is not an operator\n");	
 }
 
 bool	Channel::clientIsMember(Client const * client) const
@@ -163,106 +185,143 @@ bool	Channel::clientIsInvited(Client const *client) const
 	return false;
 }
 
-message	Channel::setTopic(Client const * commander, std::string topic) // does topic ahve special characters?
+std::vector <Client * >	Channel::setTopic(Client * commander, std::string topic) // does topic ahve special characters?
 {
 	if (!clientIsMember(commander))
-		return std::make_pair("442: <client> <channel> :You're not on that channel\n", std::vector<const Client*>(1, commander));
+		return setClientsBuffer(std::vector<Client *>(1, commander),
+			"442: " + commander->getNick() + " " + this->_name + " :You're not on that channel\n");
 	if (this->isTopicRestricted && !clientIsOperator(commander))
-		return std::make_pair("482: <client> <channel> :Permission Denied- You're not channel operator\n", std::vector<const Client*>(1, commander));
+		return setClientsBuffer(std::vector<Client *>(1, commander),
+			"482: " + commander->getNick() + " " + this->_name + " :Permission Denied- You're not channel operator\n");
 	this->_topic = topic;
-	return std::make_pair("332: <client> <channel> :<topic>\n", getRecievers(commander, 1)); // i SHOULD SEND TO COMMANDER TOO
-}
-message	Channel::getTopic(Client const * commander)
-{
-	if (!clientIsMember(commander))
-		return std::make_pair("442: <client> <channel> :You're not on that channel\n", std::vector<const Client*>(1, commander));
-	if (this->isTopicRestricted && !clientIsOperator(commander))
-		return std::make_pair("482: <client> <channel> :Permission Denied- You're not channel operator\n", std::vector<const Client*>(1, commander));
-	if (this->_topic == "")
-		return std::make_pair("331: <client> <channel> :No topic is set\n", std::vector<const Client*>(1, commander));
-	else
-		return std::make_pair("332: <client> <channel> :<topic>\n", std::vector<const Client*>(1, commander)); // should send RPL_TOPICWHOTIME also
+	return setClientsBuffer(getRecievers(commander, 1),
+			"332: " + commander->getNick() + " " + this->_name + " :" + topic + "\n");
 }
 
-message	Channel::setTopicRestrict(Client const * commander)
+std::vector <Client * >	Channel::getTopic(Client * commander)
+{
+	if (!clientIsMember(commander))
+		return setClientsBuffer(std::vector<Client *>(1, commander),
+			"442: " + commander->getNick() + " " + this->_name + " :You're not on that channel\n");
+	if (this->isTopicRestricted && !clientIsOperator(commander))
+		return setClientsBuffer(std::vector<Client *>(1, commander),
+			"482: " + commander->getNick() + " " + this->_name + " :Permission Denied- You're not channel operator\n");
+	if (this->_topic == "")
+		return setClientsBuffer(std::vector<Client *>(1, commander),
+			"331: " + commander->getNick() + " " + this->_name + " :No topic is set\n");
+	else
+		return setClientsBuffer(getRecievers(commander, 1),
+			"332: " + commander->getNick() + " " + this->_name + " :" + this->_topic + "\n");
+}
+
+std::vector <Client * >	Channel::setTopicRestrict(Client * commander)
 {
 	if (!clientIsOperator(commander))
-		return std::make_pair("482: <client> <channel> :Permission Denied- You're not channel operator\n", std::vector<const Client*>(1, commander));
+		return setClientsBuffer(std::vector<Client *>(1, commander),
+			"482: " + commander->getNick() + " " + this->_name + " :Permission Denied- You're not channel operator\n");
 
 	isTopicRestricted = true;
-	return std::make_pair("<client> <channel> :channel is now topic restricted\n", std::vector<const Client*>(1, commander));
+	return setClientsBuffer(std::vector<Client *>(1, commander),
+			commander->getNick() + " " + this->_name + " :channel is now topic restricted\n");
 }
 
-message	Channel::unsetTopicRestrict(Client const * commander)
+std::vector <Client * >	Channel::unsetTopicRestrict(Client * commander)
 {
 	if (!clientIsOperator(commander))
-		return std::make_pair("482: <client> <channel> :Permission Denied- You're not channel operator\n", std::vector<const Client*>(1, commander));
+		return setClientsBuffer(std::vector<Client *>(1, commander),
+			"482: " + commander->getNick() + " " + this->_name + " :Permission Denied- You're not channel operator\n");
 
 	isTopicRestricted = false;
-	return std::make_pair("<client> <channel> :no topic restiction\n", std::vector<const Client*>(1, commander));
+	return setClientsBuffer(std::vector<Client *>(1, commander),
+			commander->getNick() + " " + this->_name + " :channel is no longer topic restricted\n");
 }
 
-message	Channel::setInviteOnly(Client const * commander)
+std::vector <Client * >	Channel::setInviteOnly(Client * commander)
 {
 	if (!clientIsOperator(commander))
-		return std::make_pair("482: <client> <channel> :Permission Denied- You're not channel operator\n", std::vector<const Client*>(1, commander));
+		return setClientsBuffer(std::vector<Client *>(1, commander),
+			"482: " + commander->getNick() + " " + this->_name + " :Permission Denied- You're not channel operator\n");
 	isInviteOnly = true;
-	return std::make_pair("<client> <channel> :set to invite only\n", std::vector<const Client*>(1, commander));
+	return setClientsBuffer(std::vector<Client *>(1, commander),
+			commander->getNick() + " " + this->_name + " :channel is now invite only (+i)\n");
 }
 	
-message	Channel::unsetInviteOnly(Client const * commander)
+std::vector <Client * >	Channel::unsetInviteOnly(Client * commander)
 {
 	if (!clientIsOperator(commander))
-		return std::make_pair("482: <client> <channel> :Permission Denied- You're not channel operator\n", std::vector<const Client*>(1, commander));
+		return setClientsBuffer(std::vector<Client *>(1, commander),
+			"482: " + commander->getNick() + " " + this->_name + " :Permission Denied- You're not channel operator\n");
 
 	isInviteOnly = false;
-	return std::make_pair("<client> <channel> :no need for invite\n", std::vector<const Client*>(1, commander));
+	return setClientsBuffer(std::vector<Client *>(1, commander),
+			commander->getNick() + " " + this->_name + " :channel is no longer invite only (-i)\n");
 }
 
-message	Channel::setUserLimit(Client const * commander, int limit)
+std::vector <Client * >	Channel::setUserLimit(Client * commander, int limit)
 {
 	if (!clientIsOperator(commander))
-		return std::make_pair("482: <client> <channel> :Permission Denied- You're not channel operator\n", std::vector<const Client*>(1, commander));
+		return setClientsBuffer(std::vector<Client *>(1, commander),
+			"482: " + commander->getNick() + " " + this->_name + " :Permission Denied- You're not channel operator\n");
 
 	hasUsersLimit = true;
 	usersLimit = limit;
-	return std::make_pair("<client> <channel> :channel has a user limit\n", std::vector<const Client*>(1, commander));
+	return setClientsBuffer(std::vector<Client *>(1, commander),
+			commander->getNick() + " " + this->_name + " :channel user limit is now set\n");
 }
 
-message	Channel::unsetUserLimit(Client const * commander)
+std::vector <Client * >	Channel::unsetUserLimit(Client * commander)
 {
 	if (!clientIsOperator(commander))
-		return std::make_pair("482: <client> <channel> :Permission Denied- You're not channel operator\n", std::vector<const Client*>(1, commander));
+		return setClientsBuffer(std::vector<Client *>(1, commander),
+			"482: " + commander->getNick() + " " + this->_name + " :Permission Denied- You're not channel operator\n");
 
 	hasUsersLimit = false;
 	usersLimit = 0;
-	return std::make_pair("<client> <channel> :channel has no user limit\n", std::vector<const Client*>(1, commander));
+	return setClientsBuffer(std::vector<Client *>(1, commander),
+			commander->getNick() + " " + this->_name + " :channel user limit is now unset\n");
 }
 
-message	Channel::setPassword(Client const * commander, std::string password)
+std::vector <Client * >	Channel::setPassword(Client * commander, std::string password)
 {
 	// "<client> <target chan> :Key is not well-formed"
+	if (password.find_first_not_of("abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789") != std::string::npos)
+		return setClientsBuffer(std::vector<Client *>(1, commander),
+			"475: " + commander->getNick() + " " + this->_name + " :Key is not well-formed\n");
 	if (!clientIsOperator(commander))
-		return std::make_pair("482: <client> <channel> :Permission Denied- You're not channel operator\n", std::vector<const Client*>(1, commander));
+		return setClientsBuffer(std::vector<Client *>(1, commander),
+			"482: " + commander->getNick() + " " + this->_name + " :Permission Denied- You're not channel operator\n");
 	else
 	{
 		hasPassword = true;
 		this->_password = password;
-		return std::make_pair("<client> <channel> :Channel is now password protected (+k)\n", std::vector<const Client*>(1, commander));
+		return setClientsBuffer(std::vector<Client *>(1, commander),
+			commander->getNick() + " " + this->_name + " :Channel is now password protected (+k)\n");
 	}
 }
 
-message	Channel::unsetPassword(Client const * commander)
+std::vector <Client * >	Channel::unsetPassword(Client * commander)
 {
 	if (!clientIsOperator(commander))
-		return std::make_pair("482: <client> <channel> :Permission Denied- You're not channel operator\n", std::vector<const Client*>(1, commander));
+		return setClientsBuffer(std::vector<Client *>(1, commander),
+			"482: " + commander->getNick() + " " + this->_name + " :Permission Denied- You're not channel operator\n");
 	hasPassword = false;
-	return std::make_pair("<client> <channel> :Channel is now open (-k)\n", std::vector<const Client*>(1, commander));
+	return setClientsBuffer(std::vector<Client *>(1, commander),
+			commander->getNick() + " " + this->_name + " :Channel is no longer password protected (-k)\n");
 }
 					
-message Channel::sendToClients(std::string text, Client const * commander)
+std::vector <Client * > Channel::sendToClients(std::string text, Client * commander)
 {
 	if (!clientIsMember(commander))
-		return std::make_pair("442: <client> <channel> :You're not on that channel\n", std::vector<const Client*>(1, commander));
-	return std::make_pair(text, getRecievers(commander, 1)); // i SHOULD SEND TO COMMANDER TOO
+		return setClientsBuffer(std::vector<Client *>(1, commander),
+			"442: " + commander->getNick() + " " + this->_name + " :You're not on that channel\n");
+	return setClientsBuffer(getRecievers(commander, 0), text);
+}
+
+std::vector <Client * > Channel::setClientsBuffer(std::vector<Client * > clients, std::string message)
+{
+	for (std::vector<Client * >::iterator it = clients.begin(); it != clients.end(); ++it)
+	{
+		(*it)->setBuffer(message);
+	}
+	return clients;
 }

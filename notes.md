@@ -28,3 +28,10 @@ server:
 channel:
 - name: start with name specifier, no comma + no space.
 - Upon joining, clients are shown which types of channels the server supports with the CHANTYPES parameter.
+
+
+
+
+# THINGS TO FIX
+- When we create the channel -> the message that we send to the user
+- 

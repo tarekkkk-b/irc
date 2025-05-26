@@ -104,7 +104,7 @@ message Client::setUser(std::vector<std::string> _username, const Server &server
 		}
 		this->setName(_realname);
 	}
-	return std::make_pair("", std::vector<const Client *>(1, this));
+	return std::make_pair("", std::vector< Client *>(1, this));
 }
 
 static bool checkInUse(std::string _nickname, Server &server)
@@ -141,7 +141,7 @@ message Client::setNick(const std::vector<std::string> _nickname, Server &server
 		this->buffer = erroneus;
 	else
 		this->nickname = _nickname[1];
-	return std::make_pair("", std::vector<const Client *>(1, this));
+	return std::make_pair("", std::vector< Client *>(1, this));
 }
 
 void Client::setName(const std::string _name)
@@ -158,7 +158,7 @@ message Client::setPass(const std::vector<std::string> _pass, const Server &serv
 	if (this->checked)
 	{
 		this->buffer = registered;
-		return std::make_pair("", std::vector<const Client *>(1, this));
+		return std::make_pair("", std::vector< Client *>(1, this));
 	}
 	if (_pass.size() == 2)
 	{
@@ -169,7 +169,7 @@ message Client::setPass(const std::vector<std::string> _pass, const Server &serv
 	}
 	else
 		this->buffer = params;
-	return std::make_pair("", std::vector<const Client *>(1, this));
+	return std::make_pair("", std::vector< Client *>(1, this));
 }
 
 // void	Client::joinChannel(const std::vector<std::string> args, Server &server) const
