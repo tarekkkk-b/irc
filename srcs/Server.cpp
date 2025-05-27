@@ -161,7 +161,7 @@ void Server :: handleEvents()
 				if (client == NULL)
 					clients_list[event.ident] = new Client(event.ident);
 
-				toSend = parseChannelCommand(text, *getClientByFd(event.ident));
+				toSend = determinCommandSide(text, *getClientByFd(event.ident));
 				std::cout<<toSend.size()<<"\n";
 				registerChannelCients(toSend);
 				// std::cout << toSend.first << std::endl; 
@@ -431,7 +431,6 @@ std::vector <Client * >    Server::determinCommandSide(const std::string msg, Cl
 {
     std::vector<std::string> words = splitWords(msg);
     std::string error_msg = "421: " + sender.getName() + " " + words[0] + " " + ": Unknown Command.";
-    message error = std::make_pair("", std::vector< Client *>(1, &sender));
     std::string commands[] = { "JOIN", "PRIVMSG", "INVITE", "TOPIC", "KICK", "MODE", "NAME", "USER", "PASS", "INVALID" };
     int i = 0;
     while (i < 10)
@@ -442,7 +441,7 @@ std::vector <Client * >    Server::determinCommandSide(const std::string msg, Cl
     }
     if (i == 9)
         sender.setBuffer(error_msg);
-    return ((i >= 0 && i <= 5) ? this->parseChannelCommand(msg, sender) : (i >= 6 && i <= 8) ? this->parseClientCommand(words, sender) : error);
+    return ((i >= 0 && i <= 5) ? this->parseChannelCommand(msg, sender) : (i >= 6 && i <= 8) ? this->parseClientCommand(words, sender) : std::vector< Client *>(1, &sender));
 }
 
 std::vector <Client * > Server::parseClientCommand(std::vector<std::string> msg, Client &sender)
