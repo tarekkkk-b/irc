@@ -42,10 +42,10 @@ class Client
 		
 		void setAuth(bool status);
 		void setBuffer(const std::string &message);
-		message setUser(std::vector<std::string> _username, const Server &server);
-		message setNick(const std::vector<std::string> _nickname, Server &server);
+		std::vector < Client * > setUser(std::vector<std::string> _username, const Server &server);
+		std::vector < Client * > setNick(const std::vector<std::string> _nickname, Server &server);
 		void setName(const std::string _name);
-		message setPass(const std::vector<std::string> _pass, const Server &server);
+		std::vector < Client * > setPass(const std::vector<std::string> _pass, const Server &server);
 
 		// void joinChannel(const std::string _channelName) const;
 		void joinChannel(const std::vector<std::string> args, Server &server) const;

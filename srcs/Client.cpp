@@ -80,8 +80,10 @@ void Client::setBuffer(const std::string &message)
 {
 	if (!message.empty())
 		this->buffer = message;
+	else
+		this->buffer = "";
 }
-message Client::setUser(std::vector<std::string> _username, const Server &server)
+std::vector < Client * > Client::setUser(std::vector<std::string> _username, const Server &server)
 {
 	(void)server;
 	std::string params = "461: " + this->getUser() +  "PASS: Not enough parameters.";
@@ -104,7 +106,7 @@ message Client::setUser(std::vector<std::string> _username, const Server &server
 		}
 		this->setName(_realname);
 	}
-	return std::make_pair("", std::vector< Client *>(1, this));
+	return std::vector< Client *>(1, this);
 }
 
 static bool checkInUse(std::string _nickname, Server &server)
@@ -126,7 +128,7 @@ static bool checkValidNick(std::string _nickame)
 	return true;
 }
 
-message Client::setNick(const std::vector<std::string> _nickname, Server &server)
+std::vector < Client * > Client::setNick(const std::vector<std::string> _nickname, Server &server)
 {
 	std::string noNick = "431: " + this->getUser() + " : No nickname given";
 	std::string erroneus = "432: " + this->getUser() + _nickname[1] + " : Erroneus nickname";
@@ -141,7 +143,7 @@ message Client::setNick(const std::vector<std::string> _nickname, Server &server
 		this->buffer = erroneus;
 	else
 		this->nickname = _nickname[1];
-	return std::make_pair("", std::vector< Client *>(1, this));
+	return std::vector< Client *>(1, this);
 }
 
 void Client::setName(const std::string _name)
@@ -149,7 +151,7 @@ void Client::setName(const std::string _name)
 	this->realname = _name;
 }
 
-message Client::setPass(const std::vector<std::string> _pass, const Server &server)
+std::vector < Client * > Client::setPass(const std::vector<std::string> _pass, const Server &server)
 {
 	std::string params = "461: " + this->getUser() +  "PASS: Not enough parameters.";
 	std::string registered = "462: " +  this->getUser() + ": You may not reregister.";
@@ -158,7 +160,7 @@ message Client::setPass(const std::vector<std::string> _pass, const Server &serv
 	if (this->checked)
 	{
 		this->buffer = registered;
-		return std::make_pair("", std::vector< Client *>(1, this));
+		return std::vector< Client *>(1, this);
 	}
 	if (_pass.size() == 2)
 	{
@@ -169,7 +171,7 @@ message Client::setPass(const std::vector<std::string> _pass, const Server &serv
 	}
 	else
 		this->buffer = params;
-	return std::make_pair("", std::vector< Client *>(1, this));
+	return std::vector< Client *>(1, this);
 }
 
 // void	Client::joinChannel(const std::vector<std::string> args, Server &server) const

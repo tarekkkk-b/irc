@@ -404,47 +404,45 @@ std::vector <Client * > Server::handleMode(std::vector<std::string> command, Cli
 		"472: " + sender.getNick() + " " + command[0] + " :is unknown mode char to me for channel\n");
 }
 
-// std::vector <Client * >    Server::determinCommandSide(const std::string msg, Client &sender)
-// {
-//     std::vector<std::string> words = splitWords(msg);
-//     std::string error_msg = "421: " + sender.getName() + " " + words[0] + " " + ": Unknown Command.";
-//     message error = std::make_pair("", std::vector< Client *>(1, &sender));
-//     std::string commands[] = { "JOIN", "PRIVMSG", "INVITE", "TOPIC", "KICK", "MODE", "NAME", "USER", "PASS", "INVALID" };
-//     int i = 0;
-//     while (i < 10)
-//     {
-//         if (commands[i] == words[0])
-//             break ;
-//         i++;
-//     }
-//     if (i == 9)
-//         sender.setBuffer(error_msg);
-//     return ((i >= 0 && i <= 5) ? this->parseChannelCommand(msg, sender) : (i >= 6 && i <= 8) ? this->parseClientCommand(words, sender) : error);
-// }
+std::vector <Client * >    Server::determinCommandSide(const std::string msg, Client &sender)
+{
+    std::vector<std::string> words = splitWords(msg);
+    std::string error_msg = "421: " + sender.getName() + " " + words[0] + " " + ": Unknown Command.";
+    message error = std::make_pair("", std::vector< Client *>(1, &sender));
+    std::string commands[] = { "JOIN", "PRIVMSG", "INVITE", "TOPIC", "KICK", "MODE", "NAME", "USER", "PASS", "INVALID" };
+    int i = 0;
+    while (i < 10)
+    {
+        if (commands[i] == words[0])
+            break ;
+        i++;
+    }
+    if (i == 9)
+        sender.setBuffer(error_msg);
+    return ((i >= 0 && i <= 5) ? this->parseChannelCommand(msg, sender) : (i >= 6 && i <= 8) ? this->parseClientCommand(words, sender) : error);
+}
 
-// std::vector <Client * > Server::parseClientCommand(std::vector<std::string> msg, Client &sender)
-// {
-//     std::string commands[] = { "NICK", "USER", "PASS" };
-//     int i = 0;
-//     while (i < 3)
-//     {
-//         if (commands[i] == msg[0])
-//             break ;
-//         i++;
-//     }
-//     switch (i)
-//     {
-//     case 0:
-//         return (sender.setNick(msg, *this));
-//     case 1:
-//         return (sender.setUser(msg, *this));
-//     case 2:
-//         return (sender.setPass(msg, *this));
-//     // case 3:
-//     //     return (sender.setName(msg));
-//     }
-// 	return message();
-// }
+std::vector <Client * > Server::parseClientCommand(std::vector<std::string> msg, Client &sender)
+{
+    std::string commands[] = { "NICK", "USER", "PASS" };
+    int i = 0;
+    while (i < 3)
+    {
+        if (commands[i] == msg[0])
+            break ;
+        i++;
+    }
+    switch (i)
+    {
+    case 0:
+        return (sender.setNick(msg, *this));
+    case 1:
+        return (sender.setUser(msg, *this));
+    case 2:
+        return (sender.setPass(msg, *this));
+    }
+	return std::vector< Client *>(1, &sender);
+}
 
 std::vector <Client * > Server::setClientsBuffer(std::vector<Client * > clients, std::string message)
 {
