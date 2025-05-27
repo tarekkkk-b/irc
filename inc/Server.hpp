@@ -40,7 +40,7 @@ class Server
         std::vector <Client * > handleTopic(std::vector<std::string> command, Client  & sender);
         std::vector <Client * > handleKick(std::vector<std::string> command, Client  & sender);
         std::vector <Client * > handleMode(std::vector<std::string> command, Client  & sender);
-        // std::vector <Client * > parseClientCommand(std::vector<std::string> msg, Client &sender);
+        std::vector <Client * > parseClientCommand(std::vector<std::string> msg, Client &sender);
         
         Server();
 
@@ -60,7 +60,7 @@ class Server
 
         void    authClient(Client &sender);
 
-        // std::vector<Client * > determinCommandSide(const std::string msg, Client &sender);
+        std::vector<Client * > determinCommandSide(const std::string msg, Client &sender);
 
         Channel * getChannel (std::string name);
         Client * getClientByFd (int socketFd);
