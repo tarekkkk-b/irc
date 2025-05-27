@@ -120,6 +120,21 @@ void Server::authClient(Client &sender)
         sender.setAuth(true);
 }
 
+const Client *getClientObject(int fd,std::vector<Client *> ClientsToSend)
+{
+	for(size_t i = 0; i < ClientsToSend.size();i++)
+	{
+		if(ClientsToSend[i]->getSocketFd() == fd)
+			return(ClientsToSend[i]);
+	}
+	return(NULL);
+}
+void Server::deregisterEvent(int fd, int filterType) {
+    struct kevent evSet;
+    EV_SET(&evSet, fd, filterType, EV_DELETE, 0, 0, NULL);
+    kevent(this->kq, &evSet, 1, NULL, 0, NULL);
+}
+
 void Server :: handleEvents()
 {
 	std::string text;
@@ -147,6 +162,8 @@ void Server :: handleEvents()
 					clients_list[event.ident] = new Client(event.ident);
 
 				toSend = parseChannelCommand(text, *getClientByFd(event.ident));
+				std::cout<<toSend.size()<<"\n";
+				registerChannelCients(toSend);
 				// std::cout << toSend.first << std::endl; 
 				// std::cout<<message<<std::endl;
 				// this will be passes to maha in which she will parse it  and do the command  and the continue if it is not a message
@@ -154,9 +171,15 @@ void Server :: handleEvents()
 				// and then the cliet will be an event with writing filter and it will go for the next else 
 					//   know the clients in the channel and then loop through them ad register them as clients for writing  
 			}
-			else
-			{
-				// write(event.ident, message.c_str(), message.size());
+			else if (event.filter == EVFILT_WRITE) {
+				Client *client = getClientByFd(event.ident);
+				if (client && !client->getBuffer().empty()) {
+					ssize_t written = write(event.ident, client->getBuffer().c_str(), client->getBuffer().size());
+					if (written > 0) {
+						client->getBuffer().clear();
+					}
+					deregisterEvent(event.ident, EVFILT_WRITE); // optional: if nothing more to send
+				}
 			}
 	   }
 

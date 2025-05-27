@@ -54,6 +54,7 @@ class Server
         void registerEvents(int fd , int16_t  filter);
         void handleEvents();
         void registerChannelCients(std::vector <Client * > channelClients);
+       void deregisterEvent(int fd, int filterType);
 
         std::string getServPass() const;
 
