@@ -42,6 +42,7 @@ class Client
 		
 		void setAuth(bool status);
 		void setBuffer(const std::string &message);
+		void clearBuffer();
 		std::vector < Client * > setUser(std::vector<std::string> _username, const Server &server);
 		std::vector < Client * > setNick(const std::vector<std::string> _nickname, Server &server);
 		void setName(const std::string _name);

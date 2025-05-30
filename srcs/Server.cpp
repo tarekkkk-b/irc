@@ -43,7 +43,10 @@ Server::~Server()
 	std::cout << "║  IRC Server is shutting down... ║\n";
 	std::cout << "╚═════════════════════════════════╝\n";
 }
-
+uintptr_t Server:: getServFd()
+{
+	return(this->_servFd);
+}
 #include <sstream>
 std::vector<std::string> splitString(const std::string& input) {
 	std::vector<std::string> result;
@@ -60,6 +63,7 @@ std::vector<std::string> splitString(const std::string& input) {
 void Server:: initServerSocket()
 {
 	this->_servFd= socket(AF_INET,SOCK_STREAM,0);
+	std::cout<<this->_servFd<<"\n";
 	struct sockaddr_in server_addr;
 	server_addr.sin_family = AF_INET;
 	server_addr.sin_port = htons(this->_servPort);
@@ -157,28 +161,30 @@ void Server :: handleEvents()
 			else if (event.filter == EVFILT_READ)
 			{
 				text = readLine(event.ident);
+				if (text.empty())
+				{
+					close(event.ident);
+					deregisterEvent(event.ident,EVFILT_READ);
+					continue;
+				}
 				Client *client = getClientByFd(event.ident);
 				if (client == NULL)
 					clients_list[event.ident] = new Client(event.ident);
-
 				toSend = determinCommandSide(text, *getClientByFd(event.ident));
+				std::cout<<text<<"\n";
 				std::cout<<toSend.size()<<"\n";
-				registerChannelCients(toSend);
-				// std::cout << toSend.first << std::endl; 
-				// std::cout<<message<<std::endl;
-				// this will be passes to maha in which she will parse it  and do the command  and the continue if it is not a message
-				// if it is a message i will registerChannelCients(std::vector <int> channelClients)
-				// and then the cliet will be an event with writing filter and it will go for the next else 
-					//   know the clients in the channel and then loop through them ad register them as clients for writing  
+				registerChannelCients(toSend); 
 			}
-			else if (event.filter == EVFILT_WRITE) {
+			else if (event.filter == EVFILT_WRITE)
+			{
 				Client *client = getClientByFd(event.ident);
-				if (client && !client->getBuffer().empty()) {
+				if (client && !client->getBuffer().empty())
+				{
 					ssize_t written = write(event.ident, client->getBuffer().c_str(), client->getBuffer().size());
 					if (written > 0) {
-						client->getBuffer().clear();
+						client->clearBuffer();
 					}
-					deregisterEvent(event.ident, EVFILT_WRITE); // optional: if nothing more to send
+					deregisterEvent(event.ident, EVFILT_WRITE); 
 				}
 			}
 	   }
@@ -242,8 +248,9 @@ std::vector <Client * > Server::parseChannelCommand(std::string message, Client 
 	if (command[0] == "MODE")
 		return (command.erase(command.begin()), handleMode(command, sender));
 	else
-		return setClientsBuffer(std::vector< Client*>(1, &sender),
-			"421: " + sender.getNick() + " " + command[0] + " :Unknown command\n");
+		{
+			return setClientsBuffer(std::vector< Client*>(1, &sender),
+			"421: " + sender.getNick() + " " + command[0] + " :Unknown command\n");}
 }
 
 std::vector <Client * > Server::handleJoin(std::vector<std::string> command, Client & sender)
@@ -349,6 +356,7 @@ std::vector <Client * > Server::handleTopic(std::vector<std::string> command, Cl
 	return setClientsBuffer(std::vector< Client*>(1, &sender),
 		"401: " + sender.getNick() + " " + command[0] + " :No such nick/channel\n");
 }
+
 std::vector <Client * > Server::handleKick(std::vector<std::string> command, Client & sender)
 {
 	if (command.size() != 2)
@@ -429,6 +437,7 @@ std::vector <Client * > Server::handleMode(std::vector<std::string> command, Cli
 
 std::vector <Client * >    Server::determinCommandSide(const std::string msg, Client &sender)
 {
+	std::cout<<"im here in determinCommandSide"<<"\n";
     std::vector<std::string> words = splitWords(msg);
     std::string error_msg = "421: " + sender.getName() + " " + words[0] + " " + ": Unknown Command.";
     std::string commands[] = { "JOIN", "PRIVMSG", "INVITE", "TOPIC", "KICK", "MODE", "NAME", "USER", "PASS", "INVALID" };
@@ -440,7 +449,9 @@ std::vector <Client * >    Server::determinCommandSide(const std::string msg, Cl
         i++;
     }
     if (i == 9)
-        sender.setBuffer(error_msg);
+      { 
+		std::cout<<"im here in i =9"<<"\n";
+		 sender.setBuffer(error_msg);}
     return ((i >= 0 && i <= 5) ? this->parseChannelCommand(msg, sender) : (i >= 6 && i <= 8) ? this->parseClientCommand(words, sender) : std::vector< Client *>(1, &sender));
 }
 

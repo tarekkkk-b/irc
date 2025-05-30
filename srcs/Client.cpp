@@ -83,11 +83,15 @@ void Client::setBuffer(const std::string &message)
 	else
 		this->buffer = "";
 }
+void Client:: clearBuffer()
+{
+	this->buffer.clear();
+}
 std::vector < Client * > Client::setUser(std::vector<std::string> _username, const Server &server)
 {
 	(void)server;
-	std::string params = "461: " + this->getUser() +  "PASS: Not enough parameters.";
-	std::string registered = "462: " +  this->getUser() + ": You may not reregister.";
+	std::string params = "461: " + this->getUser() +  "PASS: Not enough parameters.\n";
+	std::string registered = "462: " +  this->getUser() + ": You may not reregister.\n";
 	std::string _realname = "";
 
 	this->buffer = "";
@@ -153,9 +157,9 @@ void Client::setName(const std::string _name)
 
 std::vector < Client * > Client::setPass(const std::vector<std::string> _pass, const Server &server)
 {
-	std::string params = "461: " + this->getUser() +  "PASS: Not enough parameters.";
-	std::string registered = "462: " +  this->getUser() + ": You may not reregister.";
-	std::string mismatch = "464: " + this->getUser() + " : Password incorrect.";
+	std::string params = "461: PASS: Not enough parameters.\n";
+	std::string registered = "462: You may not reregister.\n";
+	std::string mismatch = "464: Password incorrect.\n";
 
 	if (this->checked)
 	{

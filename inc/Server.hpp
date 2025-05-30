@@ -16,6 +16,7 @@
 # include <map>
 # include "types.hpp"
 #include <cstdlib>
+#include <csignal>
 
 #define MAX_EVENTS 1024
 
@@ -51,6 +52,7 @@ class Server
         ~Server();
 
         void initServerSocket();
+        uintptr_t getServFd();
         void registerEvents(int fd , int16_t  filter);
         void handleEvents();
         void registerChannelCients(std::vector <Client * > channelClients);
