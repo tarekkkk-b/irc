@@ -231,6 +231,9 @@ static std::vector<std::string> splitWords(const std::string msg)
 
 std::vector <Client * > Server::parseChannelCommand(std::string message, Client & sender)
 {
+	if (!sender.getAuth())
+		return setClientsBuffer(std::vector< Client*>(1, &sender),
+			"451: " + sender.getNick() + " :You have not registered\n");
 	std::vector<std::string> command = splitWords(message);
 	std::string commands[] = { "JOIN", "PRIVMSG", "INVITE", "TOPIC", "KICK", "MODE" };
 
@@ -252,10 +255,21 @@ std::vector <Client * > Server::parseChannelCommand(std::string message, Client 
 			return setClientsBuffer(std::vector< Client*>(1, &sender),
 			"421: " + sender.getNick() + " " + command[0] + " :Unknown command\n");}
 }
-
+bool Server::channelNameIsValid(const std::string &name)
+{
+	if (name.empty() || name.length() > 50)
+		return false;
+	if (name[0] != '#' && name[0] != '&')
+		return false;
+	for (size_t i = 1; i < name.length(); ++i)
+	{
+		if (name[i] == 0x20 || name[i] == 0x07 || name[i] == 0x2C)
+			return false;
+	}
+	return true;
+}
 std::vector <Client * > Server::handleJoin(std::vector<std::string> command, Client & sender)
 {
-	// return setClientsBuffer(std::vector< Client*>(1, &sender), "421: " + sender.getNick() + " " + command[0] + " :Unknown command\n");
 	if (command.size() < 1 || command.size() > 2)
 		return setClientsBuffer(std::vector< Client*>(1, &sender),
 			"461: " + sender.getNick() + " " + command[0] + " :Not enough parameters\n");
@@ -265,6 +279,9 @@ std::vector <Client * > Server::handleJoin(std::vector<std::string> command, Cli
 		Channel *channel = getChannel(command[0]);
 		if (channel == NULL)
 		{
+			if (!channelNameIsValid(command[0]))
+				return setClientsBuffer(std::vector< Client*>(1, &sender),
+					"403: " + sender.getNick() + " " + command[0] + " :No such channel\n");
 			_channels[command[0]] = new Channel (command[0]); // we should send to the sender
 			return _channels[command[0]]->init(&sender);
 		}

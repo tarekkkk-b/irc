@@ -57,6 +57,8 @@ class Server
         void handleEvents();
         void registerChannelCients(std::vector <Client * > channelClients);
        void deregisterEvent(int fd, int filterType);
+        bool channelNameIsValid(const std::string &name);
+
 
         std::string getServPass() const;
 
@@ -69,7 +71,6 @@ class Server
         Client * getClientByNick (std::string name);
 
         std::vector <Client * >    setClientsBuffer(std::vector<Client * > clients, std::string message);
-
 
 };
 
