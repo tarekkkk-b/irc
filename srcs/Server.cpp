@@ -47,18 +47,6 @@ uintptr_t Server:: getServFd()
 {
 	return(this->_servFd);
 }
-#include <sstream>
-std::vector<std::string> splitString(const std::string& input) {
-	std::vector<std::string> result;
-	std::istringstream stream(input);
-	std::string word;
-
-	while (stream >> word) {
-		result.push_back(word);
-	}
-
-	return result;
-}
 
 void Server:: initServerSocket()
 {
@@ -175,6 +163,9 @@ void Server :: handleEvents()
 			}
 			else if (event.filter == EVFILT_READ)
 			{
+				Client *client = getClientByFd(event.ident);
+				if (client == NULL)
+					clients_list[event.ident] = new Client(event.ident);
 				text = readLine(event.ident);
 				if (text.size()==0 && text.empty())
 				{
@@ -184,9 +175,6 @@ void Server :: handleEvents()
 				}
 				else if(text.size()==1 && text[0] == '\n')
 					continue;
-				Client *client = getClientByFd(event.ident);
-				if (client == NULL)
-					clients_list[event.ident] = new Client(event.ident);
 				toSend = determinCommandSide(text, *getClientByFd(event.ident));
 				// this->authClient(*client);
 				std::cout<<text<<"\n";
@@ -293,7 +281,6 @@ std::vector <Client * > Server::handleJoin(std::vector<std::string> command, Cli
 		return setClientsBuffer(std::vector< Client*>(1, &sender), notEnoughParams);
 	if (command[0][0] == '#')
 	{
-		command[0].erase(0, 1);
 		Channel *channel = getChannel(command[0]);
 		if (channel == NULL)
 		{
@@ -322,7 +309,6 @@ std::vector <Client * > Server::handlePrivMsg(std::string msg, std::vector<std::
 	return setClientsBuffer(std::vector< Client*>(1, &sender), noRecipient);
 	if (command[0][0] == '#')
 	{
-		command[0].erase(0, 1);
 		Channel * channel = getChannel(command[0]);
 		if (channel == NULL)
 		return setClientsBuffer(std::vector< Client*>(1, &sender), noSuchChannel);
@@ -349,7 +335,6 @@ std::vector <Client * > Server::handleInvite(std::vector<std::string> command, C
 	return setClientsBuffer(std::vector< Client*>(1, &sender), noSuchNickName);
 	if (command[1][0] == '#')
 	{
-		command[1].erase(0, 1);
 		Channel *channel = getChannel(command[1]);
 		if (channel == NULL)
 		return setClientsBuffer(std::vector< Client*>(1, &sender), noSuchChannel);
@@ -371,7 +356,6 @@ std::vector <Client * > Server::handleTopic(std::vector<std::string> command, Cl
 		return setClientsBuffer(std::vector< Client*>(1, &sender), notEnoughParams);
 	if (command[0][0] == '#')
 	{
-		command[0].erase(0, 1);
 		channel = getChannel(command[0]);
 		if (channel == NULL)
 			return setClientsBuffer(std::vector< Client*>(1, &sender), noSuchChannel);
@@ -394,7 +378,6 @@ std::vector <Client * > Server::handleKick(std::vector<std::string> command, Cli
 		return setClientsBuffer(std::vector< Client*>(1, &sender), notEnoughParams);
 	if (command[0][0] == '#')
 	{
-		command[0].erase(0, 1);
 		Channel *channel = getChannel(command[0]);
 		if (channel == NULL)
 			return setClientsBuffer(std::vector< Client*>(1, &sender), noSuchChannel);
@@ -419,7 +402,6 @@ std::vector <Client * > Server::handleMode(std::vector<std::string> command, Cli
 
 	if (command[0][0] != '#')
 		return setClientsBuffer(std::vector< Client*>(1, &sender), noSuchNick);
-	command[0].erase(0, 1);
 	Channel *channel = getChannel(command[0]);
 	if (channel == NULL)
 		return setClientsBuffer(std::vector< Client*>(1, &sender), noSuchChannel);
