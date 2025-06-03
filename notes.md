@@ -38,7 +38,7 @@ channel:
 
 # THINGS TO FIX
 - When we create the channel -> the message that we send to the user
-- 
+- I should not remove the hashtag in the channel name
 
 
 # TESTING

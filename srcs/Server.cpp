@@ -274,8 +274,6 @@ bool Server::channelNameIsValid(const std::string &name)
 {
 	if (name.empty() || name.length() > 50)
 		return false;
-	if (name[0] != '#' && name[0] != '&')
-		return false;
 	for (size_t i = 1; i < name.length(); ++i)
 	{
 		if (name[i] == 0x20 || name[i] == 0x07 || name[i] == 0x2C)
