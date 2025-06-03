@@ -104,7 +104,9 @@ std::string readLine(int fd)
 	while ((n = read(fd, &ch, 1)) == 1)
 	{
 		if (ch == '\n') 
-			break;        
+		{
+			line += ch;  
+				break; }       
 		line += ch;                    
 	}
 	return line;
@@ -174,12 +176,14 @@ void Server :: handleEvents()
 			else if (event.filter == EVFILT_READ)
 			{
 				text = readLine(event.ident);
-				if (text.empty())
+				if (text.size()==0 && text.empty())
 				{
 					close(event.ident);
 					deregisterEvent(event.ident,EVFILT_READ);
 					continue;
 				}
+				else if(text.size()==1 && text[0] == '\n')
+					continue;
 				Client *client = getClientByFd(event.ident);
 				if (client == NULL)
 					clients_list[event.ident] = new Client(event.ident);
