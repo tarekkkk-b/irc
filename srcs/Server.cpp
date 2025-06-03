@@ -68,6 +68,12 @@ void Server:: initServerSocket()
 	server_addr.sin_family = AF_INET;
 	server_addr.sin_port = htons(this->_servPort);
 	server_addr.sin_addr.s_addr = INADDR_ANY;
+	// is used to allow the socket to reuse a local address (i.e., port) that's in the TIME_WAIT state.
+	int yes = 1;
+	if (setsockopt(this->_servFd, SOL_SOCKET, SO_REUSEADDR, &yes, sizeof(yes)) < 0) {
+		perror("setsockopt");
+		exit(EXIT_FAILURE);
+	}
 	if(bind(this->_servFd,(struct sockaddr*)&server_addr,sizeof(server_addr))==0)
 		listen(this->_servFd,5);
 	this-> kq = kqueue();
@@ -454,7 +460,7 @@ std::vector <Client * > Server::handleMode(std::vector<std::string> command, Cli
 
 std::vector <Client * >    Server::determinCommandSide(const std::string msg, Client &sender)
 {
-	std::cout<<"im here in determinCommandSide"<<"\n";
+	
     std::vector<std::string> words = splitWords(msg);
     std::string error_msg = "421: " + sender.getName() + " " + words[0] + " " + ": Unknown Command.";
     std::string commands[] = { "JOIN", "PRIVMSG", "INVITE", "TOPIC", "KICK", "MODE", "NAME", "USER", "PASS", "INVALID" };
@@ -467,9 +473,8 @@ std::vector <Client * >    Server::determinCommandSide(const std::string msg, Cl
     }
     if (i == 9)
       { 
-		std::cout<<"im here in i =9"<<"\n";
 		 sender.setBuffer(error_msg);}
-    return ((i >= 0 && i <= 5) ? this->parseChannelCommand(msg, sender) : (i >= 6 && i <= 8) ? this->parseClientCommand(words, sender) : std::vector< Client *>(1, &sender));
+    return (std::cout<<"im here in determinCommandSide"<<"\n",(i >= 0 && i <= 5) ? this->parseChannelCommand(msg, sender) : (i >= 6 && i <= 8) ? this->parseClientCommand(words, sender) : std::vector< Client *>(1, &sender));
 }
 
 std::vector <Client * > Server::parseClientCommand(std::vector<std::string> msg, Client &sender)
