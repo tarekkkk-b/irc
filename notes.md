@@ -102,4 +102,11 @@ channel:
 			- non-number limit
 		* invallid flag
 	- commander is not moderator
-		
+
+
+
+
+// NICK NAME ERR_NOSUCHNICK (401) ERR_NORECIPIENT (411)
+
+// CHANNEL ERR_CANNOTSENDTOCHAN (404)
+// TEXT ERR_NOTEXTTOSEND (412)
