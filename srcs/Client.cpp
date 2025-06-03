@@ -51,7 +51,7 @@ std::string Client::getNick() const
 {
 	return this->nickname;
 }
-// ilysm uwu <3
+
 std::string Client::getName() const
 {
 	return this->realname;
@@ -115,8 +115,11 @@ std::vector < Client * > Client::setUser(std::vector<std::string> _username, con
 
 static bool checkInUse(std::string _nickname, Server &server)
 {
-	if (!server.getClientByNick(_nickname))
+	if (server.getClientByNick(_nickname))
+	{
+		// std::cout << "the nickname of the client is " << server.getClientByNick(_nickname)->getNick() << " tada!\n";
 		return true;
+	}
 	return false;
 }
 
@@ -134,9 +137,9 @@ static bool checkValidNick(std::string _nickame)
 
 std::vector < Client * > Client::setNick(const std::vector<std::string> _nickname, Server &server)
 {
-	std::string noNick = "431: " + this->getUser() + " : No nickname given";
-	std::string erroneus = "432: " + this->getUser() + _nickname[1] + " : Erroneus nickname";
-	std::string inUse = "433: " + this->getUser() + _nickname[1] + " : Nickname is already in use";
+	std::string noNick = "431: No nickname given\n";
+	std::string erroneus = "432: "  + _nickname[1] + " : Erroneus nickname\n";
+	std::string inUse = "433: "  + _nickname[1] + " : Nickname is already in use\n";
 
 	this->buffer = "";
 	if (_nickname.size() < 2)

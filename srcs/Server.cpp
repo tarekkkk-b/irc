@@ -126,8 +126,15 @@ std::string Server::getServPass() const
 
 void Server::authClient(Client &sender)
 {
+	std::cout << "-------------------------\n";
+	std::cout << sender.getNick() << std::endl;
+	std::cout << sender.getUser() << std::endl;
+	std::cout << sender.getPass() << std::endl;
+	std::cout << "-------------------------\n\n";
     if (!sender.getNick().empty() && !sender.getUser().empty() && sender.getPass())
-        sender.setAuth(true);
+	{
+		sender.setAuth(true);
+	}
 }
 
 const Client *getClientObject(int fd,std::vector<Client *> ClientsToSend)
@@ -177,6 +184,7 @@ void Server :: handleEvents()
 				if (client == NULL)
 					clients_list[event.ident] = new Client(event.ident);
 				toSend = determinCommandSide(text, *getClientByFd(event.ident));
+				// this->authClient(*client);
 				std::cout<<text<<"\n";
 				std::cout<<toSend.size()<<"\n";
 				registerChannelCients(toSend); 
@@ -237,6 +245,7 @@ static std::vector<std::string> splitWords(const std::string msg)
 
 std::vector <Client * > Server::parseChannelCommand(std::string message, Client & sender)
 {
+	this->authClient(sender);
 	if (!sender.getAuth())
 		return setClientsBuffer(std::vector< Client*>(1, &sender),
 			"451: " + sender.getNick() + " :You have not registered\n");
@@ -463,12 +472,14 @@ std::vector <Client * >    Server::determinCommandSide(const std::string msg, Cl
 	
     std::vector<std::string> words = splitWords(msg);
     std::string error_msg = "421: " + sender.getName() + " " + words[0] + " " + ": Unknown Command.";
-    std::string commands[] = { "JOIN", "PRIVMSG", "INVITE", "TOPIC", "KICK", "MODE", "NAME", "USER", "PASS", "INVALID" };
+    std::string commands[] = { "JOIN", "PRIVMSG", "INVITE", "TOPIC", "KICK", "MODE", "NICK", "USER", "PASS", "INVALID" };
     int i = 0;
     while (i < 10)
     {
         if (commands[i] == words[0])
             break ;
+		if (i == 9)
+			break ;
         i++;
     }
     if (i == 9)
@@ -481,10 +492,14 @@ std::vector <Client * > Server::parseClientCommand(std::vector<std::string> msg,
 {
     std::string commands[] = { "NICK", "USER", "PASS" };
     int i = 0;
+	std::cout << "the command is: " << msg[0] << std::endl;
     while (i < 3)
     {
-        if (commands[i] == msg[0])
-            break ;
+		if (commands[i] == msg[0])
+		{
+			std::cout << "the case is: " << i << std::endl;
+				break ;
+		}
         i++;
     }
     switch (i)

@@ -1,5 +1,5 @@
 CPP = c++
-CPPFLAGS = -Wall -Wextra -Werror -std=c++98
+CPPFLAGS = -Wall -Wextra -Werror -std=c++98 -fsanitize=address -g3
 CPPFILES = srcs/Server.cpp main.cpp srcs/Client.cpp srcs/Channel.cpp 
 NAME = ircserv
 
