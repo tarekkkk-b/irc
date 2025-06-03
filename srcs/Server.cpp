@@ -318,7 +318,7 @@ std::vector <Client * > Server::handlePrivMsg(std::string msg, std::vector<std::
 	{
 		Client * reciever = getClientByNick(command[0]);
 		if (!reciever)
-		return setClientsBuffer(std::vector< Client*>(1, &sender), noSuchChannel);
+			return setClientsBuffer(std::vector< Client*>(1, &sender), noSuchNick);
 		return setClientsBuffer(std::vector< Client*>(1, reciever), message);		
 	}
 }
