@@ -1,4 +1,5 @@
 #include "../inc/Client.hpp"
+#include "Client.hpp"
 
 Client::Client()
 {
@@ -71,6 +72,10 @@ std::string Client::getBuffer() const
 {
 	return this->buffer;
 }
+std::string Client::getPrefix() const
+{
+	return this->prefix;
+}
 void Client::setAuth(bool status)
 {
 	this->authenticated = status;
@@ -82,6 +87,13 @@ void Client::setBuffer(const std::string &message)
 		this->buffer = message;
 	else
 		this->buffer = "";
+}
+void Client::setPrefix()
+{
+	if (this->authenticated)
+	{
+		this->prefix = ":" + this->getNick() + "!" + this->getUser() + "@localhost"; 
+	}
 }
 void Client:: clearBuffer()
 {
@@ -106,6 +118,8 @@ std::vector < Client * > Client::setUser(std::vector<std::string> _username, con
 		{
 			if (_username[i][0] == ':')
 				_username[i].erase(0, 1);
+			if (i != 4 && i != _username.size() - 1)
+				_realname += " ";
 			_realname += _username[i];
 		}
 		this->setName(_realname);
@@ -116,10 +130,7 @@ std::vector < Client * > Client::setUser(std::vector<std::string> _username, con
 static bool checkInUse(std::string _nickname, Server &server)
 {
 	if (server.getClientByNick(_nickname))
-	{
-		// std::cout << "the nickname of the client is " << server.getClientByNick(_nickname)->getNick() << " tada!\n";
 		return true;
-	}
 	return false;
 }
 

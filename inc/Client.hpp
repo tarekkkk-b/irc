@@ -17,6 +17,7 @@ class Client
     	std::string nickname;
     	std::string username;
     	std::string realname;
+		std::string prefix;
     	// std::string hostname;
     	// std::string password;
 		std::string buffer;
@@ -37,11 +38,13 @@ class Client
 		std::string getNick() const;
 		std::string getName() const;
 		std::string getBuffer() const;
+		std::string getPrefix() const;
 		bool getPass() const;
 		int	getSocketFd() const;
 		
 		void setAuth(bool status);
 		void setBuffer(const std::string &message);
+		void setPrefix();
 		void clearBuffer();
 		std::vector < Client * > setUser(std::vector<std::string> _username, const Server &server);
 		std::vector < Client * > setNick(const std::vector<std::string> _nickname, Server &server);
