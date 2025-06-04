@@ -187,6 +187,7 @@ void Server :: handleEvents()
 					removeClientFromChannels(client);
 					close(event.ident);
 					deregisterEvent(event.ident,EVFILT_READ);
+					clients_list.erase(event.ident);
 					delete client;
 					continue;
 				}
