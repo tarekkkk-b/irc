@@ -83,10 +83,10 @@ channel:
 	- commander is not moderator
 
 5. TOPIC
-	- get topic vs set topic
-	- commander is moderator
-		* syntax of the topic
-	- +t and commander is not moderator
+	- get topic vs set topic ✅
+	- commander is moderator ✅
+		* syntax of the topic ❌
+	- +t and commander is not moderator ✅
 
 6. MODE
 	- commander is moderator

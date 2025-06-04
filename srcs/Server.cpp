@@ -361,13 +361,13 @@ std::vector <Client * > Server::handleInvite(std::vector<std::string> command, C
 std::vector <Client * > Server::handleTopic(std::vector<std::string> command, Client & sender)
 {
 	
+	if (command.size() == 0)
+		return setClientsBuffer(std::vector< Client*>(1, &sender), "Not enough parameters\n");
 	std::string notEnoughParams = "461: " + sender.getNick() + " " + command[0] + " :Not enough parameters\n";
 	std::string noSuchNick = "401: " + sender.getNick() + " " + command[0] + " :No such nick\n";
 	std::string noSuchChannel = "403: " + sender.getNick() + " " + command[0] + " :No such channel\n";
 	std::string noSuchNickName = "406: " + sender.getNick() + " " + command[0] + " :There was no such nickname\n";
 	Channel * channel = NULL;
-	if (command.size() == 0)
-		return setClientsBuffer(std::vector< Client*>(1, &sender), notEnoughParams);
 	if (command[0][0] == '#')
 	{
 		channel = getChannel(command[0]);
@@ -460,7 +460,6 @@ std::vector <Client * > Server::handleMode(std::vector<std::string> command, Cli
 
 std::vector <Client * >    Server::determinCommandSide(const std::string msg, Client &sender)
 {
-	
     std::vector<std::string> words = splitWords(msg);
     std::string error_msg = "421: " + sender.getName() + " " + words[0] + " " + ": Unknown Command\n";
     std::string commands[] = { "JOIN", "PRIVMSG", "INVITE", "TOPIC", "KICK", "MODE", "NICK", "USER", "PASS", "INVALID" };
