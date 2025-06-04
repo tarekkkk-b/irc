@@ -51,7 +51,6 @@ uintptr_t Server:: getServFd()
 void Server:: initServerSocket()
 {
 	this->_servFd= socket(AF_INET,SOCK_STREAM,0);
-	std::cout<<this->_servFd<<"\n";
 	struct sockaddr_in server_addr;
 	server_addr.sin_family = AF_INET;
 	server_addr.sin_port = htons(this->_servPort);
@@ -116,10 +115,10 @@ std::string Server::getServPass() const
 
 void Server::authClient(Client &sender)
 {
-	std::cout << "-------------------------\n";
-	std::cout << sender.getNick() << std::endl;
-	std::cout << sender.getUser() << std::endl;
-	std::cout << sender.getPass() << std::endl;
+	std::cout << "---------Auth------------\n";
+	std::cout << "client Nick: " << sender.getNick() << std::endl;
+	std::cout << "client User: " << sender.getUser() << std::endl;
+	std::cout << "client Pass: " << sender.getPass() << std::endl;
 	std::cout << "-------------------------\n\n";
     if (!sender.getNick().empty() && !sender.getUser().empty() && sender.getPass())
 	{
@@ -145,7 +144,6 @@ void Server::deregisterEvent(int fd, int filterType) {
 void Server :: handleEvents()
 {
 	std::string text;
-	std::cout<<"im here in handle events"<<"\n";
 	registerEvents(this -> _servFd,EVFILT_READ);
 	struct kevent ev[MAX_EVENTS];
 	std::vector <Client *> toSend;
@@ -158,7 +156,7 @@ void Server :: handleEvents()
 			if(event.ident == this ->_servFd)
 			{
 				int client_fd = accept(this ->_servFd,NULL,NULL);
-				std::cout<<"one client has been connected "<<"this is is his fd"<<client_fd<<"\n";
+				std::cout<<"one client has been connected at fd -> "<<client_fd<<"\n";
 				registerEvents(client_fd,EVFILT_READ);
 			}
 			else if (event.filter == EVFILT_READ)
@@ -177,8 +175,8 @@ void Server :: handleEvents()
 					continue;
 				toSend = determinCommandSide(text, *getClientByFd(event.ident));
 				// this->authClient(*client);
-				std::cout<<text<<"\n";
-				std::cout<<toSend.size()<<"\n";
+				std::cout<<"command: " << text;
+				std::cout<<"Number of clients to recieve response: " << toSend.size()<<"\n";
 				registerChannelCients(toSend); 
 			}
 			else if (event.filter == EVFILT_WRITE)
@@ -462,21 +460,17 @@ std::vector <Client * >    Server::determinCommandSide(const std::string msg, Cl
     if (i == 9)
       { 
 		 sender.setBuffer(error_msg);}
-    return (std::cout<<"im here in determinCommandSide"<<"\n",(i >= 0 && i <= 5) ? this->parseChannelCommand(msg, sender) : (i >= 6 && i <= 8) ? this->parseClientCommand(words, sender) : std::vector< Client *>(1, &sender));
+    return ((i >= 0 && i <= 5) ? this->parseChannelCommand(msg, sender) : (i >= 6 && i <= 8) ? this->parseClientCommand(words, sender) : std::vector< Client *>(1, &sender));
 }
 
 std::vector <Client * > Server::parseClientCommand(std::vector<std::string> msg, Client &sender)
 {
     std::string commands[] = { "NICK", "USER", "PASS" };
     int i = 0;
-	std::cout << "the command is: " << msg[0] << std::endl;
     while (i < 3)
     {
 		if (commands[i] == msg[0])
-		{
-			std::cout << "the case is: " << i << std::endl;
-				break ;
-		}
+			break ;
         i++;
     }
     switch (i)

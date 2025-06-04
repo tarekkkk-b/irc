@@ -36,10 +36,8 @@ std::vector <Client * > Channel::init(Client * channelCreator)
 	if (_operators.size() != 0)
 		return setClientsBuffer(std::vector<Client *>(1, channelCreator),
 			"channel already exists\n");
-	addClient(channelCreator);
 	addOperator(channelCreator, channelCreator);
-	return setClientsBuffer(std::vector<Client *>(1, channelCreator),
-			channelCreator->getNick() + " has joined the channel\n");
+	return addClient(channelCreator);
 }
 std::string Channel::getName() const
 {
@@ -60,37 +58,40 @@ std::vector < Client * > Channel::getRecievers(Client * sender, int withSender)
 
 std::vector <Client * >    Channel::addClient(Client * client, std::string password)
 {
+	std::string clientExists = "443: " + client->getNick() + " " + this->_name + " :is already on channel\n";
+	std::string fullChannel = "471: " + client->getNick() + " " + this->_name + " :Cannot join channel (+l)\n";
+	std::string isInviteOnly = "473: " + client->getNick() + " " + this->_name + " :Cannot join channel (+i)\n";
+	std::string hasPass = "475: " + client->getNick() + " " + this->_name + " :Cannot join channel (+k)\n";
+	std::string message;
+
 	if (clientIsMember(client))
-		return setClientsBuffer(std::vector<Client *>(1, client),
-			"443: " + client->getNick() + " " + this->_name + " :is already on channel\n");
-
+		return setClientsBuffer(std::vector<Client *>(1, client), clientExists);
 	if (this->hasUsersLimit && _clients.size() >= (unsigned long) usersLimit)
-		return setClientsBuffer(std::vector<Client *>(1, client),
-			"471: " + client->getNick() + " " + this->_name + " :Cannot join channel (+l)\n");
-	else if (this->isInviteOnly && !clientIsInvited(client))
-		return setClientsBuffer(std::vector<Client *>(1, client),
-			"473: " + client->getNick() + " " + this->_name + " :Cannot join channel (+i)\n");
-	else if (this->hasPassword && password != this->_password)
-		return setClientsBuffer(std::vector<Client *>(1, client),
-			"475: " + client->getNick() + " " + this->_name + " :Cannot join channel (+k)\n");
-	else
-	{
-		std::ostringstream oss;
-		oss << client->getSocketFd() << " " << this->_name << " :";
-		std::string message = oss.str();
+		return setClientsBuffer(std::vector<Client *>(1, client), fullChannel);
+	if (this->isInviteOnly && !clientIsInvited(client))
+		return setClientsBuffer(std::vector<Client *>(1, client), isInviteOnly);
+	if (this->hasPassword && password != this->_password)
+		return setClientsBuffer(std::vector<Client *>(1, client), hasPass);
 
-		if (clientIsInvited(client))
-			uninviteClient(client);
-		this->_clients.push_back(client);
-		if (this->isTopicRestricted)
-			message += this->_topic + "\n";
-		else
-			message += "No topic is set\n";
-		message += client->getNick() + " " + this->_name + " :has joined the channel\n";
-		setClientsBuffer(std::vector< Client*>(1, client), message);
-		setClientsBuffer(getRecievers(client, 0), client->getNick() + " " + this->_name + " has joined the channel\n");
-		return getRecievers(client, 1);
+	if (clientIsInvited(client))
+		uninviteClient(client);
+	this->_clients.push_back(client);
+	message += client->getNick() + " " + this->_name + " :has joined the channel\n";
+	if (!this->_topic.empty())
+		message += this->_topic + "\n";
+	message += client->getNick() + " " + this->getName() + " :";
+	for (unsigned long i = 0; i < _clients.size(); i++)
+	{
+		if (clientIsOperator(_clients[i]))
+			message += "@";
+		message += _clients[i]->getNick();
+		if ((unsigned long) i != _clients.size() - 1)
+			message += " ";
 	}
+	message += "\n";
+	setClientsBuffer(std::vector< Client*>(1, client), message);
+	setClientsBuffer(getRecievers(client, 0), client->getNick() + " " + this->_name + " has joined the channel\n");
+	return getRecievers(client, 1);
 }
 
 std::vector <Client * >    Channel::removeClient(Client * commander, Client * client)

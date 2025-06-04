@@ -37,9 +37,10 @@ channel:
 
 
 # THINGS TO FIX
-- When we create the channel -> the message that we send to the user
-- I should not remove the hashtag in the channel name
-
+- [client] RPL_WELCOME (001)  : "<client> :Welcome to the <networkname> Network, <nick>[!<user>@<host>]"
+- [server] when a client disconnect -> 1. remove from channels 2. remve from server 3. free memory
+	* when we dont remove the client and close the fd only, this causes the new client to join in the old client's place
+- [server-and-channel] when a channel has 0 clients -> remove from the server.
 
 # TESTING
 * for all channel commands we have to first check that the clliennt is authenticated
