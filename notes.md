@@ -73,12 +73,12 @@ channel:
 		* user does not exist in channel ✅
 		* user does not exist in server ✅
 		* kick yourself ✅
-	- commander is not moderator
+	- commander is not moderator ✅
 	- KICK/disconnect the last client ❌
 
 4. INVITE
-	- commander is moderator
-		* user does not exist
+	- commander is moderator ✅
+		* user does not exist ✅
 		* user is not authenticated
 	- commander is not moderator
 
@@ -90,24 +90,24 @@ channel:
 
 6. MODE
 	- commander is moderator
-		* +i
-		* -i
-		* +t
-		* -t
-		* +k [password-syntax]
-		* -k
-			* when key is not set
-		* +o
-			* user is not a channel member
-			* user is not a server member
+		* +i ✅
+		* -i ✅
+		* +t ✅
+		* -t ✅
+		* +k [password-syntax] ✅
+		* -k ✅
+			* when key is not set ✅
+		* +o 
+			* user is not a channel member ✅
+			* user is not a server member ✅
 		* -o
-			* user is not a channel member
-			* user is not a server member
+			* user is not a channel member ✅
+			* user is not a server member ✅
 		* +l
-			- what if users are already more than the limit?
-			- non-number limit
-		* invallid flag
-	- commander is not moderator
+			- what if users are already more than the limit? ✅
+			- non-number limit ❌
+		* invallid flag ✅
+	- commander is not moderator ✅
 
 
 
