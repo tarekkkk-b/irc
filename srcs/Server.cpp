@@ -302,7 +302,7 @@ std::vector <Client * > Server::handlePrivMsg(std::string msg, std::vector<std::
 	std::string noSuchChannel = "403: " + sender.getNick() + " " + command[0] + " :No such channel\n";
 	std::string noRecipient = "411: " + sender.getNick() + " :No recipient given (PRIVMSG)\n";
 	std::string noSuchNick = "401: " + sender.getNick() + " " + command[0] + " :No such nick\n";
-	std::string message = sender.getNick() + " : " + msg;
+	std::string message = sender.getNick() + " :" + msg;
 	if (command.size() == 0)
 	return setClientsBuffer(std::vector< Client*>(1, &sender), noRecipient);
 	if (command[0][0] == '#')
@@ -446,7 +446,7 @@ std::vector <Client * >    Server::determinCommandSide(const std::string msg, Cl
 {
 	
     std::vector<std::string> words = splitWords(msg);
-    std::string error_msg = "421: " + sender.getName() + " " + words[0] + " " + ": Unknown Command.";
+    std::string error_msg = "421: " + sender.getName() + " " + words[0] + " " + ": Unknown Command\n";
     std::string commands[] = { "JOIN", "PRIVMSG", "INVITE", "TOPIC", "KICK", "MODE", "NICK", "USER", "PASS", "INVALID" };
     int i = 0;
     while (i < 10)
