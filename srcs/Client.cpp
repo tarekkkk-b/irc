@@ -181,6 +181,20 @@ std::vector < Client * > Client::setPass(const std::vector<std::string> _pass, c
 	return std::vector< Client *>(1, this);
 }
 
+
+void Client:: destroyClient()
+{
+	this->checked = 0;
+	authenticated = 0;
+	close (socketFd);
+	buffer.clear();
+	this->realname = "";
+	this->username = "";
+	this->nickname = "";
+	this->socketFd = -1;
+}
+
+
 // void	Client::joinChannel(const std::vector<std::string> args, Server &server) const
 // {
 // 	if (args.size() == 3)

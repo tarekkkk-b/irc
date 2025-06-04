@@ -71,6 +71,8 @@ class Server
         Client * getClientByNick (std::string name);
 
         std::vector <Client * >    setClientsBuffer(std::vector<Client * > clients, std::string message);
+        void removeClientFromChannels(Client *client);
+
 
 };
 

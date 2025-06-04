@@ -53,4 +53,5 @@ class Client
 		void leaveChannel(const std::string _channelName) const;
 
 		void parseUserCommands(const std::string msg);
+		void destroyClient();
 };
