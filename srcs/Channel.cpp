@@ -345,3 +345,4 @@ std::vector <Client * > Channel::setClientsBuffer(std::vector<Client * > clients
 	}
 	return clients;
 }
+

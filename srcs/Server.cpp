@@ -43,6 +43,7 @@ Server::~Server()
 	std::cout << "║  IRC Server is shutting down... ║\n";
 	std::cout << "╚═════════════════════════════════╝\n";
 }
+
 uintptr_t Server:: getServFd()
 {
 	return(this->_servFd);
@@ -103,7 +104,8 @@ std::string readLine(int fd)
  {
 	for( unsigned long i = 0; i < channelClients.size();i++)
 	{
-		registerEvents( channelClients[i]->getSocketFd(), EVFILT_WRITE);
+		if (channelClients[i]->getSocketFd()!= -1)
+		   registerEvents( channelClients[i]->getSocketFd(), EVFILT_WRITE);
 	}
 	
  }
@@ -140,6 +142,18 @@ void Server::deregisterEvent(int fd, int filterType) {
     EV_SET(&evSet, fd, filterType, EV_DELETE, 0, 0, NULL);
     kevent(this->kq, &evSet, 1, NULL, 0, NULL);
 }
+// void removeClientSilently(Client * client);
+// std:: map <std::string, Channel * > _channels
+void Server:: removeClientFromChannels(Client *client)
+{
+	// for(size_t i =0 ; i < client->getChannels().size();i++)
+	// {
+	// 	std::cout << "im here in removeClientFromChannels \n";
+	// 	_channels[client->getChannels()[i]]->removeClientSilently(client);
+	// }
+	client->destroyClient();
+
+}
 
 void Server :: handleEvents()
 {
@@ -167,6 +181,8 @@ void Server :: handleEvents()
 				text = readLine(event.ident);
 				if (text.size()==0 && text.empty())
 				{
+					Client *client = getClientByFd(event.ident);
+					removeClientFromChannels(client);
 					close(event.ident);
 					deregisterEvent(event.ident,EVFILT_READ);
 					continue;
