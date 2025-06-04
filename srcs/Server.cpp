@@ -177,7 +177,9 @@ void Server :: handleEvents()
 			{
 				Client *client = getClientByFd(event.ident);
 				if (client == NULL)
-					clients_list[event.ident] = new Client(event.ident);
+				{
+					std::cout <<"im here the client is null\n";
+						clients_list[event.ident] = new Client(event.ident);}
 				text = readLine(event.ident);
 				if (text.size()==0 && text.empty())
 				{
@@ -185,6 +187,8 @@ void Server :: handleEvents()
 					removeClientFromChannels(client);
 					close(event.ident);
 					deregisterEvent(event.ident,EVFILT_READ);
+					clients_list.erase(event.ident);
+					delete client;
 					continue;
 				}
 				else if(text.size()==1 && text[0] == '\n')
