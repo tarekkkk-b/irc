@@ -120,6 +120,7 @@ void Server::authClient(Client &sender)
 	std::cout << "---------Auth------------\n";
 	std::cout << "client Nick: " << sender.getNick() << std::endl;
 	std::cout << "client User: " << sender.getUser() << std::endl;
+	std::cout << "client Name: " << sender.getName() << std::endl;
 	std::cout << "client Pass: " << sender.getPass() << std::endl;
 	std::cout << "-------------------------\n\n";
     if (!sender.getNick().empty() && !sender.getUser().empty() && sender.getPass())
@@ -178,7 +179,7 @@ void Server :: handleEvents()
 				Client *client = getClientByFd(event.ident);
 				if (client == NULL)
 				{
-					std::cout <<"im here the client is null\n";
+					// std::cout <<"im here the client is null\n";
 						clients_list[event.ident] = new Client(event.ident);}
 				text = readLine(event.ident);
 				if (text.size()==0 && text.empty())
@@ -196,7 +197,7 @@ void Server :: handleEvents()
 				toSend = determinCommandSide(text, *getClientByFd(event.ident));
 				// this->authClient(*client);
 				std::cout<<"command: " << text;
-				std::cout<<"Number of clients to recieve response: " << toSend.size()<<"\n";
+				// std::cout<<"Number of clients to recieve response: " << toSend.size()<<"\n";
 				registerChannelCients(toSend); 
 			}
 			else if (event.filter == EVFILT_WRITE)
@@ -204,6 +205,7 @@ void Server :: handleEvents()
 				Client *client = getClientByFd(event.ident);
 				if (client && !client->getBuffer().empty())
 				{
+					std::cout << "buffer is:	" << client->getBuffer().c_str() << std::endl;
 					ssize_t written = write(event.ident, client->getBuffer().c_str(), client->getBuffer().size());
 					if (written > 0) {
 						client->clearBuffer();
@@ -316,21 +318,40 @@ std::vector <Client * > Server::handleJoin(std::vector<std::string> command, Cli
 	}
 	return setClientsBuffer(std::vector< Client*>(1, &sender), noSuchChannel);
 }
-	
+
+
+/// @brief stores for every client what they are supposed to receive in a buffer
+/// @param msg the text that was read from the user through readline
+/// @param command a vectr of the user's input split by spaces
+/// @param sender the client who sent
+/// @return a vector of clients who are supposed to receive the message
 std::vector <Client * > Server::handlePrivMsg(std::string msg, std::vector<std::string> command, Client & sender)
 {
-	std::string noSuchChannel = "403: " + sender.getNick() + " " + command[0] + " :No such channel\n";
-	std::string noRecipient = "411: " + sender.getNick() + " :No recipient given (PRIVMSG)\n";
-	std::string noSuchNick = "401: " + sender.getNick() + " " + command[0] + " :No such nick\n";
-	std::string message = sender.getNick() + " :" + msg;
+	std::string noSuchChannel = "403: " + sender.getNick() + " " + command[0] + " :No such channel\r\n";
+	std::string noRecipient = "411: " + sender.getNick() + " :No recipient given (PRIVMSG)\r\n";
+	std::string noSuchNick = "401: " + sender.getNick() + " " + command[0] + " :No such nick\r\n";
+	// std::string message = sender.getNick() + " :" + msg;
+	// std::string message = sender.getPrefix() + " PRIVMSG " + command[0] + " :" + msg.substr(msg.find(':')); 
+	std::string message;
+	size_t colonPos = msg.find(" :");
+	sender.setPrefix();
+	if (colonPos != std::string::npos)
+	{
+		std::string content = msg.substr(colonPos + 2);
+		message = sender.getPrefix() + " PRIVMSG " + command[0] + " :" + content + "\r\n";
+		std::cout << "the prefix is: " << sender.getPrefix() << std::endl;
+		std::cout << message;
+	}
+	else
+		message = sender.getPrefix() + " PRIVMSG " + command[0] + " :\r\n"; // empty message
 	if (command.size() == 0)
 	return setClientsBuffer(std::vector< Client*>(1, &sender), noRecipient);
 	if (command[0][0] == '#')
 	{
 		Channel * channel = getChannel(command[0]);
 		if (channel == NULL)
-		return setClientsBuffer(std::vector< Client*>(1, &sender), noSuchChannel);
-		return channel->sendToClients(msg, &sender);
+			return setClientsBuffer(std::vector< Client*>(1, &sender), noSuchChannel);
+		return channel->sendToClients(message, &sender);
 	}
 	else
 	{
@@ -355,9 +376,9 @@ std::vector <Client * > Server::handleInvite(std::vector<std::string> command, C
 	{
 		Channel *channel = getChannel(command[1]);
 		if (channel == NULL)
-		return setClientsBuffer(std::vector< Client*>(1, &sender), noSuchChannel);
+			return setClientsBuffer(std::vector< Client*>(1, &sender), noSuchChannel);
 		else
-		return channel->inviteClient(&sender, getClientByNick(command[0]));
+			return channel->inviteClient(&sender, getClientByNick(command[0]));
 	}
 	return setClientsBuffer(std::vector< Client*>(1, &sender), noSuchNick);
 }

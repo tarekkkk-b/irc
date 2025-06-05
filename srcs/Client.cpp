@@ -1,5 +1,4 @@
 #include "../inc/Client.hpp"
-#include "Client.hpp"
 
 Client::Client()
 {
@@ -102,7 +101,7 @@ void Client:: clearBuffer()
 std::vector < Client * > Client::setUser(std::vector<std::string> _username, const Server &server)
 {
 	(void)server;
-	std::string params = "461: " + this->getUser() +  "PASS: Not enough parameters.\n";
+	std::string params = "461: " + this->getUser() +  "USER: Not enough parameters.\n";
 	std::string registered = "462: " +  this->getUser() + ": You may not reregister.\n";
 	std::string _realname = "";
 
@@ -118,7 +117,7 @@ std::vector < Client * > Client::setUser(std::vector<std::string> _username, con
 		{
 			if (_username[i][0] == ':')
 				_username[i].erase(0, 1);
-			if (i != 4 && i != _username.size() - 1)
+			if (i != 4 && i != _username.size())
 				_realname += " ";
 			_realname += _username[i];
 		}
