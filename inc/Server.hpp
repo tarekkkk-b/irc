@@ -2,7 +2,7 @@
 # define SERVER_HPP
 # include <sys/socket.h>
 # include <netinet/in.h>
-# include <sys/event.h>
+# include </workspaces/irc/libkqueue/include/sys/event.h>
 # include <iostream>
 # include <arpa/inet.h>
 # include <vector>
@@ -17,6 +17,9 @@
 # include "types.hpp"
 #include <cstdlib>
 #include <csignal>
+#include <cstdio>
+#include <algorithm>
+
 
 #define MAX_EVENTS 1024
 
