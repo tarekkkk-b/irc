@@ -187,7 +187,6 @@ void Server:: removeClientFromChannels(Client *client)
 		if((_channels[client_channels[i]])->getClients().size()==0)
 				delete _channels[client_channels[i]];}
 	delete client;
-
 }
 
 void Server :: handleEvents()
@@ -223,7 +222,6 @@ void Server :: handleEvents()
 					removeClientFromChannels(client);
 					deregisterEvent(event.ident,EVFILT_READ);
 					clients_list.erase(event.ident);
-					delete client;
 					continue;
 				}
 				else if(text.size()==1 && text[0] == '\n')
