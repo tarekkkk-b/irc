@@ -14,8 +14,9 @@ bool Server::channelNameIsValid(const std::string &name)
 
 std::vector <Client * > Server::handleJoin(std::vector<std::string> command, Client & sender)
 {
-	std::string notEnoughParams = "461: " + sender.getNick() + " " + command[0] + " :Not enough parameters\n";
-	std::string noSuchChannel = "403: " + sender.getNick() + " " + command[0] + " :No such channel\n";
+	std::string notEnoughParams = "461: " + sender.getNick() + " " + command[0] + " :Not enough parameters\r\n";
+	std::string noSuchChannel = "403: " + sender.getNick() + " " + command[0] + " :No such channel\r\n";
+	std::string badMask = "476: <channel> :Bad Channel Mask\r\n";
 	if (command.size() < 1 || command.size() > 2)
 		return setClientsBuffer(std::vector< Client*>(1, &sender), notEnoughParams);
 	if (command[0][0] == '#')
@@ -25,7 +26,7 @@ std::vector <Client * > Server::handleJoin(std::vector<std::string> command, Cli
 		{
 			if (!channelNameIsValid(command[0]))
 				return setClientsBuffer(std::vector< Client*>(1, &sender), noSuchChannel);
-			_channels[command[0]] = new Channel (command[0]); // we should send to the sender
+			_channels[command[0]] = new Channel (command[0]);
 			return _channels[command[0]]->init(&sender);
 		}
 		else

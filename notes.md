@@ -42,6 +42,7 @@ channel:
 - [server-and-channel] when a channel has 0 clients -> remove from the server.
 - [channel] channel name only # should not pass
 - [client] should reciieve a message if not auhenticated
+- [channel-name] should check if channel name is valid
 -----------
 - [message-format] it needs to end with \r\n
 
