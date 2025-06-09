@@ -71,6 +71,7 @@
 		"random": "cpp",
 		"numbers": "cpp",
 		"typeindex": "cpp",
-		"csignal": "cpp"
+		"csignal": "cpp",
+		"cinttypes": "cpp"
 	}
 }

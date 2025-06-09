@@ -6,7 +6,6 @@
 #include <sstream>
 #include "Channel.hpp"
 #include "Server.hpp"
-#include "../inc/types.hpp"
 
 class Server;
 
