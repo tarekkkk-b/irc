@@ -125,6 +125,10 @@ channel:
 | `MODE #channel +l limit`      | Set user limit                  | `:<nick>!<user>@<host> MODE #channel +l limit`                                                               |
 | `MODE #channel +t`            | Only ops can set topic          | `:<nick>!<user>@<host> MODE #channel +t`                                                                     |
 
+
+
+
+
 | **Code** | **Meaning**                                 | **Format (for LimeChat)**                                           |
 | -------- | ------------------------------------------- | ------------------------------------------------------------------- |
 | `401`    | ERR\_NOSUCHNICK – No such nick/channel      | `:server 401 <nick> <target> :No such nick/channel`                 |
