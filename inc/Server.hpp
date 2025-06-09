@@ -2,7 +2,7 @@
 # define SERVER_HPP
 # include <sys/socket.h>
 # include <netinet/in.h>
-# include "../libkqueue/include/sys/event.h"
+# include <sys/event.h>
 # include <iostream>
 # include <arpa/inet.h>
 # include <vector>
@@ -19,7 +19,8 @@
 #include <csignal>
 #include <cstdio>
 #include <algorithm>
-#include <fcntl.h>    
+#include <fcntl.h>   
+#include <cstring> 
 
 
 #define MAX_EVENTS 1024
@@ -65,6 +66,9 @@ class Server
         void registerChannelCients(std::vector <Client * > channelClients);
        void deregisterEvent(int fd, int filterType);
         bool channelNameIsValid(const std::string &name);
+        void cleanupAfterClient(Client *client, int fd);
+        void sendMessage(int fd);
+        void handleRecivers(std::string text,int fd);
 
 
         std::string getServPass() const;
