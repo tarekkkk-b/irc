@@ -108,3 +108,21 @@ channel:
 			- non-number limit ❌
 		* invallid flag ✅
 	- commander is not moderator ✅
+
+
+| **Client Command**            | **Description**                 | **Expected Server Message(s)**                                                                               |
+| ----------------------------- | ------------------------------- | ------------------------------------------------------------------------------------------------------------ |
+| `JOIN #channel`               | Join a channel                  | `:<nick>!<user>@<host> JOIN :#channel`                                                                       |
+|                               |                                 | `:server 332 <nick> #channel :<topic>` *(Topic)*                                                             |
+|                               |                                 | `:server 333 <nick> #channel <set_by> <timestamp>` *(Topic info)*                                            |
+|                               |                                 | `:server 353 <nick> = #channel :@admin +user1 user2` *(NAMES list)*                                          |
+|                               |                                 | `:server 366 <nick> #channel :End of /NAMES list.`                                                           |
+| `PRIVMSG <target> <message>`  | Send private or channel message | `:<nick>!<user>@<host> PRIVMSG <target> :<message>`                                                          |
+| `KICK #channel nick [reason]` | Kick user from channel          | `:<nick>!<user>@<host> KICK #channel nick :[reason]`                                                         |
+| `INVITE nick #channel`        | Invite user to a channel        | `:<nick>!<user>@<host> INVITE nick :#channel`                                                                |
+| `TOPIC #channel :<topic>`     | Set or view channel topic       | **Set:** `:<nick>!<user>@<host> TOPIC #channel :<topic>`<br>**View:** `:server 332 <nick> #channel :<topic>` |
+| `MODE #channel +k pass`       | Set password/key for channel    | `:<nick>!<user>@<host> MODE #channel +k pass`                                                                |
+| `MODE #channel +i`            | Make channel invite-only        | `:<nick>!<user>@<host> MODE #channel +i`                                                                     |
+| `MODE #channel +o nick`       | Give channel operator rights    | `:<nick>!<user>@<host> MODE #channel +o nick`                                                                |
+| `MODE #channel +l limit`      | Set user limit                  | `:<nick>!<user>@<host> MODE #channel +l limit`                                                               |
+| `MODE #channel +t`            | Only ops can set topic          | `:<nick>!<user>@<host> MODE #channel +t`                                                                     |
