@@ -37,6 +37,7 @@ class Client
 		std::string getNick() const;
 		std::string getName() const;
 		std::string getBuffer() const;
+		
 		bool getPass() const;
 		int	getSocketFd() const;
 		
@@ -54,4 +55,5 @@ class Client
 
 		void parseUserCommands(const std::string msg);
 		void destroyClient();
+		std::vector<std::string> *getChannels();
 };
