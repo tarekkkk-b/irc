@@ -66,6 +66,10 @@ class Channel
 		std::vector < Client * > sendToClients(std::string text, Client * commander);
 		std::vector <Client * > setClientsBuffer(std::vector<Client * > clients, std::string message);
 
+		std::vector < Client * > getClients();
+		void removeClientSilently( Client * client);
+		// std::vector < Client * > Channel:: getClients()
+
 };
 
 #endif

@@ -2,7 +2,7 @@
 # define SERVER_HPP
 # include <sys/socket.h>
 # include <netinet/in.h>
-# include <sys/event.h>
+# include "../libkqueue/include/sys/event.h"
 # include <iostream>
 # include <arpa/inet.h>
 # include <vector>
@@ -17,8 +17,15 @@
 # include "types.hpp"
 #include <cstdlib>
 #include <csignal>
+#include <cstdio>
+#include <algorithm>
+#include <fcntl.h>    
+
 
 #define MAX_EVENTS 1024
+extern int SERVFD;
+extern int KQ;
+
 
 class Channel;
 

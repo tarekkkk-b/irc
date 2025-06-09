@@ -352,3 +352,19 @@ std::vector <Client * > Channel::setClientsBuffer(std::vector<Client * > clients
 	return clients;
 }
 
+std::vector < Client * > Channel:: getClients()
+{
+	return(this-> _clients);
+}
+
+void Channel:: removeClientSilently( Client * client)
+{
+	if (!clientIsMember(client))
+		return ;
+
+	std::vector<Client * >::iterator clientToBeRemoved = std::find(_clients.begin(), _clients.end(), client);
+	if (clientToBeRemoved != _clients.end())
+		_clients.erase(clientToBeRemoved);
+
+}
+

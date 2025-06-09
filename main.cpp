@@ -15,9 +15,23 @@ int strToIntSafe (std::string intStr)
     
     return num;
 }
+
+void signalHandler(int signal)
+{
+    if(signal == 2)
+    {
+        if(SERVFD!= -1)
+        {
+            close (SERVFD);
+        }
+        exit(0);
+    }
+}
+#include <signal.h>
     
 int main(int argc, char **argv)
 {
+    signal (SIGINT,signalHandler);
     try
     {
         if(argc != 3)
