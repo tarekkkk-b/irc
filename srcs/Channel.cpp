@@ -43,6 +43,7 @@ std::vector <Client * >	Channel::addClient(Client * client, std::string password
 	std::string hasPass = "475: " + client->getNick() + " " + this->_name + " :Cannot join channel (+k)\r\n";
 	std::string message;
 	std::string joinMsg = ":" + client->getPrefix() + " JOIN :" + _name;
+	
 	if (clientIsMember(client))
 		return setClientsBuffer(std::vector<Client *>(1, client), clientExists);
 	if (this->hasUsersLimit && _clients.size() >= (unsigned long) usersLimit)
