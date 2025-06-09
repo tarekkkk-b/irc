@@ -1,4 +1,4 @@
-#include "../inc/Server.hpp"
+# include "Server.hpp"
 
 static std::vector<std::string> splitWords(const std::string msg)
 {

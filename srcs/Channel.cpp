@@ -1,4 +1,4 @@
-# include "../inc/Channel.hpp"
+# include "Channel.hpp"
 
 Channel::Channel() {}
 

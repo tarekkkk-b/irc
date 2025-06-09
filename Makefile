@@ -1,5 +1,5 @@
 CPP = c++
-CPPFLAGS = -Wall -Wextra -Werror -std=c++98
+CPPFLAGS = -Wall -Wextra -Werror -std=c++98 -Iinc
 COMMANDS = srcs/commands
 CPPFILES = srcs/Server.cpp main.cpp srcs/Client.cpp srcs/Channel.cpp srcs/redirect.cpp \
 			$(COMMANDS)/invite.cpp $(COMMANDS)/join.cpp $(COMMANDS)/kick.cpp \

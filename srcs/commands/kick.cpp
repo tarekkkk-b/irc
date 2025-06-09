@@ -1,4 +1,4 @@
-#include "../../inc/Server.hpp"
+# include "Server.hpp"
 
 std::vector <Client * > Server::handleKick(std::vector<std::string> command, Client & sender)
 {

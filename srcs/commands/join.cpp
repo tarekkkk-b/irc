@@ -1,4 +1,4 @@
-#include "../../inc/Server.hpp"
+# include "Server.hpp"
 
 bool Server::channelNameIsValid(const std::string &name)
 {

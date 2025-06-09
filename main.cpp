@@ -2,7 +2,7 @@
 # include <sstream>
 # include <stdexcept>
 
-# include "inc/Server.hpp"
+# include "Server.hpp"
 
 int strToIntSafe (std::string intStr)
 {

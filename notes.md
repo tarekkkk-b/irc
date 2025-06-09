@@ -33,9 +33,6 @@ channel:
 - name: start with name specifier, no comma + no space.
 - Upon joining, clients are shown which types of channels the server supports with the CHANTYPES parameter.
 
-
-
-
 # THINGS TO FIX
 - [client] RPL_WELCOME (001)  : "<client> :Welcome to the <networkname> Network, <nick>[!<user>@<host>]"
 - [server] when a client disconnect -> 1. remove from channels 2. remve from server 3. free memory
@@ -45,6 +42,8 @@ channel:
 - [server-and-channel] when a channel has 0 clients -> remove from the server.
 - [channel] channel name only # should not pass
 - [client] should reciieve a message if not auhenticated
+-----------
+- [message-format] it needs to end with \r\n
 
 # TESTING
 * for all channel commands we have to first check that the clliennt is authenticated
