@@ -194,12 +194,23 @@ std::vector < Client * > Client::setPass(const std::vector<std::string> _pass, c
 
 void Client:: destroyClient()
 {
+	// for(size_t i = 0; i < channels.size() ; i++)
+	// {
+	// 	this->leaveChannel(channels[i]);
+	// }
 	this->checked = 0;
 	authenticated = 0;
 	close (socketFd);
+	
 	buffer.clear();
 	this->realname = "";
 	this->username = "";
 	this->nickname = "";
 	this->socketFd = -1;
+
 }
+std::vector<std::string> *Client:: getChannels()
+{
+	return(&this-> channels);
+}
+

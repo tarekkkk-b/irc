@@ -56,4 +56,5 @@ class Client
 
 		void parseUserCommands(const std::string msg);
 		void destroyClient();
+		std::vector<std::string> *getChannels();
 };

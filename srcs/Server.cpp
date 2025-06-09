@@ -1,5 +1,8 @@
 # include "Server.hpp"
 
+int SERVFD= -1;
+int KQ = -1;
+
 Server::Server() {}
 
 Server::Server(int port, std::string password)
@@ -52,6 +55,9 @@ uintptr_t Server:: getServFd()
 void Server:: initServerSocket()
 {
 	this->_servFd= socket(AF_INET,SOCK_STREAM,0);
+	SERVFD = this->_servFd;
+	fcntl(_servFd, F_SETFL, O_NONBLOCK);
+
 	struct sockaddr_in server_addr;
 	server_addr.sin_family = AF_INET;
 	server_addr.sin_port = htons(this->_servPort);
@@ -63,8 +69,9 @@ void Server:: initServerSocket()
 		exit(EXIT_FAILURE);
 	}
 	if(bind(this->_servFd,(struct sockaddr*)&server_addr,sizeof(server_addr))==0)
-		listen(this->_servFd,5);
+		listen(this->_servFd,SOMAXCONN);
 	this-> kq = kqueue();
+	KQ =this-> kq;
 	if (kq == -1)
 	{
 		perror("kqueue");
@@ -73,13 +80,29 @@ void Server:: initServerSocket()
 	handleEvents();
 }
 
-void Server:: registerEvents(int fd , int16_t  filter)
-{
+// void Server:: registerEvents(int fd , int16_t  filter)
+// {
+// 	struct kevent ev;
+// 	EV_SET(&ev, fd, filter, EV_ADD, 0, 0, NULL);
+// 	if (kevent(this->kq, &ev, 1, NULL, 0, NULL) == -1)
+// 	{
+// 		std::cout <<"im here eeee\n";
+// 		perror("kevent register fd");
+// 		exit(EXIT_FAILURE);
+// 	}
+// }
+#include <cerrno>
+#include <cstring>
+void Server::registerEvents(int fd, int16_t filter) {
 	struct kevent ev;
 	EV_SET(&ev, fd, filter, EV_ADD, 0, 0, NULL);
-	if (kevent(this->kq, &ev, 1, NULL, 0, NULL) == -1)
-	{
-		perror("kevent register fd");
+
+	std::cerr << "[DEBUG] Registering fd=" << fd << ", filter=" << filter << std::endl;
+
+	if (kevent(this->kq, &ev, 1, NULL, 0, NULL) == -1) {
+		int err = errno;
+		std::cout<< fd <<"fd"<< filter<<"filter\n";
+		std::cerr << "kevent register fd failed: hereee " << strerror(err) << std::endl;
 		exit(EXIT_FAILURE);
 	}
 }
@@ -105,7 +128,8 @@ std::string readLine(int fd)
 	for( unsigned long i = 0; i < channelClients.size();i++)
 	{
 		if (channelClients[i]->getSocketFd()!= -1)
-		   registerEvents( channelClients[i]->getSocketFd(), EVFILT_WRITE);
+			registerEvents( channelClients[i]->getSocketFd(), EVFILT_WRITE);
+			
 	}
 	
  }
@@ -154,7 +178,15 @@ void Server:: removeClientFromChannels(Client *client)
 	// 	_channels[client->getChannels()[i]]->removeClientSilently(client);
 	// }
 	client->destroyClient();
-
+	std::vector <std::string> client_channels= *client->getChannels();
+	std::cout<<"client->getChannels().size()"<<client_channels.size()<<"\n";
+	for(size_t i =0; i < client_channels.size();i++)
+	{
+		_channels[client_channels[i]]->removeClientSilently(client);
+		
+		if((_channels[client_channels[i]])->getClients().size()==0)
+				delete _channels[client_channels[i]];}
+	delete client;
 }
 
 void Server :: handleEvents()
@@ -185,25 +217,27 @@ void Server :: handleEvents()
 				text = readLine(event.ident);
 				if (text.size()==0 && text.empty())
 				{
+					std::cout<< "im here in ctrl c\n";
 					Client *client = getClientByFd(event.ident);
 					removeClientFromChannels(client);
-					close(event.ident);
 					deregisterEvent(event.ident,EVFILT_READ);
 					clients_list.erase(event.ident);
-					delete client;
 					continue;
 				}
 				else if(text.size()==1 && text[0] == '\n')
 					continue;
 				toSend = determinCommandSide(text, *getClientByFd(event.ident));
+				std::cout <<toSend[0]->getBuffer().size()<<"getBuffer().size()"<<"\n";
+				if(toSend[0]->getBuffer().size() ==0)
+				toSend[0]->setBuffer("\n");
 				// this->authClient(*client);
 				std::cout<<"command: " << text;
-				// std::cout<<"Number of clients to recieve response: " << toSend.size()<<"\n";
 				registerChannelCients(toSend); 
 			}
 			else if (event.filter == EVFILT_WRITE)
 			{
 				Client *client = getClientByFd(event.ident);
+				
 				if (client && !client->getBuffer().empty())
 				{
 					std::cout << "buffer is:	" << client->getBuffer().c_str() << std::endl;

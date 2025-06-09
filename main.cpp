@@ -10,14 +10,28 @@ int strToIntSafe (std::string intStr)
     std::string remaining;
     std::stringstream intParse(intStr);
 
-    if (!(intParse >> num) || (intParse >> remaining))
+    if (!(intParse >> num) || (intParse >> remaining) || num < 6660 || num > 6669)
         throw std::invalid_argument("invalid Port Number");
     
     return num;
 }
+
+void signalHandler(int signal)
+{
+    if(signal == 2)
+    {
+        if(SERVFD!= -1)
+        {
+            close (SERVFD);
+        }
+        exit(0);
+    }
+}
+#include <signal.h>
     
 int main(int argc, char **argv)
 {
+    signal (SIGINT,signalHandler);
     try
     {
         if(argc != 3)
