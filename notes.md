@@ -33,9 +33,6 @@ channel:
 - name: start with name specifier, no comma + no space.
 - Upon joining, clients are shown which types of channels the server supports with the CHANTYPES parameter.
 
-
-
-
 # THINGS TO FIX
 - [client] RPL_WELCOME (001)  : "<client> :Welcome to the <networkname> Network, <nick>[!<user>@<host>]"
 - [server] when a client disconnect -> 1. remove from channels 2. remve from server 3. free memory
@@ -45,6 +42,8 @@ channel:
 - [server-and-channel] when a channel has 0 clients -> remove from the server.
 - [channel] channel name only # should not pass
 - [client] should reciieve a message if not auhenticated
+-----------
+- [message-format] it needs to end with \r\n
 
 # TESTING
 * for all channel commands we have to first check that the clliennt is authenticated
@@ -73,46 +72,38 @@ channel:
 		* user does not exist in channel ✅
 		* user does not exist in server ✅
 		* kick yourself ✅
-	- commander is not moderator
+	- commander is not moderator ✅
 	- KICK/disconnect the last client ❌
 
 4. INVITE
-	- commander is moderator
-		* user does not exist
+	- commander is moderator ✅
+		* user does not exist ✅
 		* user is not authenticated
 	- commander is not moderator
 
 5. TOPIC
-	- get topic vs set topic
-	- commander is moderator
-		* syntax of the topic
-	- +t and commander is not moderator
+	- get topic vs set topic ✅
+	- commander is moderator ✅
+		* syntax of the topic ❌
+	- +t and commander is not moderator ✅
 
 6. MODE
 	- commander is moderator
-		* +i
-		* -i
-		* +t
-		* -t
-		* +k [password-syntax]
-		* -k
-			* when key is not set
-		* +o
-			* user is not a channel member
-			* user is not a server member
+		* +i ✅
+		* -i ✅
+		* +t ✅
+		* -t ✅
+		* +k [password-syntax] ✅
+		* -k ✅
+			* when key is not set ✅
+		* +o 
+			* user is not a channel member ✅
+			* user is not a server member ✅
 		* -o
-			* user is not a channel member
-			* user is not a server member
+			* user is not a channel member ✅
+			* user is not a server member ✅
 		* +l
-			- what if users are already more than the limit?
-			- non-number limit
-		* invallid flag
-	- commander is not moderator
-
-
-
-
-// NICK NAME ERR_NOSUCHNICK (401) ERR_NORECIPIENT (411)
-
-// CHANNEL ERR_CANNOTSENDTOCHAN (404)
-// TEXT ERR_NOTEXTTOSEND (412)
+			- what if users are already more than the limit? ✅
+			- non-number limit ❌
+		* invallid flag ✅
+	- commander is not moderator ✅

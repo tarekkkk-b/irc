@@ -1,4 +1,4 @@
-# include "../inc/Channel.hpp"
+# include "Channel.hpp"
 
 Channel::Channel() {}
 
@@ -78,7 +78,7 @@ std::vector <Client * >    Channel::addClient(Client * client, std::string passw
 	this->_clients.push_back(client);
 	message += client->getNick() + " " + this->_name + " :has joined the channel\n";
 	if (!this->_topic.empty())
-		message += this->_topic + "\n";
+		message += client->getNick() + " " + this->_name + " :" + this->_topic + "\n";
 	message += client->getNick() + " " + this->getName() + " :";
 	for (unsigned long i = 0; i < _clients.size(); i++)
 	{
@@ -138,7 +138,7 @@ std::vector <Client * >    Channel::inviteClient(Client * commander, Client * cl
 			"443: " + client->getNick() + " " + this->_name + " :is already on channel\n");
 
 	this->_invitations.push_back(client);
-	return setClientsBuffer(std::vector<Client *>(1, commander),
+	return setClientsBuffer(std::vector<Client *>(1, client),
 			"341: " + commander->getNick() + " " + client->getNick() + " " + this->_name + " :has been invited to channel\n");
 }
 
@@ -151,24 +151,31 @@ void    Channel::uninviteClient(Client * client)
 
 std::vector <Client * >    Channel::addOperator(Client * commander, Client * client)
 {
+	std::string notMember = "441: " + client->getNick() + " " + this->_name + " :They aren't on that channel\n";
 	std::string notMemberU = "442: " + commander->getNick() + " " + this->_name + " :You're not on that channel\n";
 	if (!clientIsMember(commander) && commander != client)
 		return setClientsBuffer(std::vector<Client *>(1, commander), notMemberU);
-	if (clientIsOperator(commander) || _operators.size() == 0)
+	if ((clientIsOperator(commander) && clientIsMember(client))|| _operators.size() == 0)
 	{
 		this->_operators.push_back(client);
 		return setClientsBuffer(getRecievers(commander, 1),
 			"client " + client->getNick() + " is now an operator\n");
 	}
+	if ((clientIsOperator(commander) && !clientIsMember(client)))
+		return setClientsBuffer(std::vector<Client *>(1, commander), notMember);
+
 	return setClientsBuffer(std::vector<Client *>(1, commander),
 			"482: " + commander->getNick() + " " + this->_name + " :Permission Denied- You're not channel operator\n");
 }
 
 std::vector <Client * >    Channel::removeOperator(Client * commander, Client * client)
 {
+	std::string notMember = "441: " + client->getNick() + " " + this->_name + " :They aren't on that channel\n";
 	std::string notMemberU = "442: " + commander->getNick() + " " + this->_name + " :You're not on that channel\n";
 	if (!clientIsMember(commander))
 		return setClientsBuffer(std::vector<Client *>(1, commander), notMemberU);
+	if ((clientIsOperator(commander) && !clientIsMember(client)))
+		return setClientsBuffer(std::vector<Client *>(1, commander), notMember);
 	if (!clientIsOperator(commander))
 		return setClientsBuffer(std::vector<Client *>(1, commander),
 			"482: " + commander->getNick() + " " + this->_name + " :Permission Denied- You're not channel operator\n");
@@ -207,31 +214,30 @@ bool	Channel::clientIsInvited(Client const *client) const
 
 std::vector <Client * >	Channel::setTopic(Client * commander, std::string topic) // does topic ahve special characters?
 {
+	std::string notMemberU = "442: " + commander->getNick() + " " + this->_name + " :You're not on that channel\n";
+	std::string noPermission = "482: " + commander->getNick() + " " + this->_name + " :Permission Denied- You're not channel operator\n";
+	std::string message = "332: " + commander->getNick() + " " + this->_name + " :" + topic + "\n";
+	std::string noMessage = "331: " + commander->getNick() + " " + this->_name + " :No topic is set\n";
+	
 	if (!clientIsMember(commander))
-		return setClientsBuffer(std::vector<Client *>(1, commander),
-			"442: " + commander->getNick() + " " + this->_name + " :You're not on that channel\n");
+	return setClientsBuffer(std::vector<Client *>(1, commander), notMemberU);
 	if (this->isTopicRestricted && !clientIsOperator(commander))
-		return setClientsBuffer(std::vector<Client *>(1, commander),
-			"482: " + commander->getNick() + " " + this->_name + " :Permission Denied- You're not channel operator\n");
+	return setClientsBuffer(std::vector<Client *>(1, commander), noPermission);
 	this->_topic = topic;
-	return setClientsBuffer(getRecievers(commander, 1),
-			"332: " + commander->getNick() + " " + this->_name + " :" + topic + "\n");
+	return setClientsBuffer(std::vector<Client *>(1, commander), message);
 }
 
 std::vector <Client * >	Channel::getTopic(Client * commander)
 {
+	std::string message = "332: " + commander->getNick() + " " + this->_name + " :" + this->_topic + "\n";
+	std::string noMessage = "331: " + commander->getNick() + " " + this->_name + " :No topic is set\n";
 	if (!clientIsMember(commander))
 		return setClientsBuffer(std::vector<Client *>(1, commander),
 			"442: " + commander->getNick() + " " + this->_name + " :You're not on that channel\n");
-	if (this->isTopicRestricted && !clientIsOperator(commander))
-		return setClientsBuffer(std::vector<Client *>(1, commander),
-			"482: " + commander->getNick() + " " + this->_name + " :Permission Denied- You're not channel operator\n");
 	if (this->_topic == "")
-		return setClientsBuffer(std::vector<Client *>(1, commander),
-			"331: " + commander->getNick() + " " + this->_name + " :No topic is set\n");
+		return setClientsBuffer(std::vector<Client *>(1, commander), noMessage);
 	else
-		return setClientsBuffer(getRecievers(commander, 1),
-			"332: " + commander->getNick() + " " + this->_name + " :" + this->_topic + "\n");
+		return setClientsBuffer(std::vector<Client *>(1, commander), message);
 }
 
 std::vector <Client * >	Channel::setTopicRestrict(Client * commander)
