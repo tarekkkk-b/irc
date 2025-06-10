@@ -35,6 +35,11 @@ std::vector < Client * > Channel::getRecievers(Client * sender, int withSender)
 	return recievers;
 }
 
+int Channel::getNumberOfClients()
+{
+	return this->_numberOfClients;
+}
+
 std::vector <Client * >	Channel::addClient(Client * client, std::string password)
 {
 	std::string clientExists = ":ircserver 443 " + client->getNick() + " " + this->_name + " :is already on channel\r\n";
@@ -56,7 +61,8 @@ std::vector <Client * >	Channel::addClient(Client * client, std::string password
 	if (this->hasPassword && password != this->_password)
 		return setClientsBuffer(std::vector<Client *>(1, client), hasPass);
 
-	if (clientIsInvited(client))
+	_numberOfClients++;
+		if (clientIsInvited(client))
 		uninviteClient(client);
 	this->_clients.push_back(client);
 	if (!this->_topic.empty())
@@ -97,7 +103,7 @@ std::vector <Client * >    Channel::removeClient(Client * commander, Client * cl
 	std::vector<Client * >::iterator clientToBeRemoved = std::find(_clients.begin(), _clients.end(), client);
 	if (clientToBeRemoved != _clients.end())
 		_clients.erase(clientToBeRemoved);
-
+	this->_numberOfClients --;
 	clientToBeRemoved = std::find(_operators.begin(), _operators.end(), client);
 	if (clientToBeRemoved != _operators.end())
 		_operators.erase(clientToBeRemoved);
