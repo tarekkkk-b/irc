@@ -19,7 +19,8 @@
 #include <csignal>
 #include <cstdio>
 #include <algorithm>
-#include <fcntl.h>    
+#include <fcntl.h>   
+#include <cstring> 
 
 
 #define MAX_EVENTS 1024
@@ -65,11 +66,12 @@ class Server
         void registerChannelCients(std::vector <Client * > channelClients);
        void deregisterEvent(int fd, int filterType);
         bool channelNameIsValid(const std::string &name);
+        void cleanupAfterClient(Client *client, int fd);
+        void sendMessage(int fd);
+        void handleRecivers(std::string text,int fd);
 
 
         std::string getServPass() const;
-
-        void    authClient(Client &sender);
 
         std::vector<Client * > determinCommandSide(const std::string msg, Client &sender);
 

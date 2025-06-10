@@ -62,7 +62,6 @@ void Server:: initServerSocket()
 	server_addr.sin_family = AF_INET;
 	server_addr.sin_port = htons(this->_servPort);
 	server_addr.sin_addr.s_addr = INADDR_ANY;
-	// is used to allow the socket to reuse a local address (i.e., port) that's in the TIME_WAIT state.
 	int yes = 1;
 	if (setsockopt(this->_servFd, SOL_SOCKET, SO_REUSEADDR, &yes, sizeof(yes)) < 0) {
 		perror("setsockopt");
@@ -80,26 +79,14 @@ void Server:: initServerSocket()
 	handleEvents();
 }
 
-// void Server:: registerEvents(int fd , int16_t  filter)
-// {
-// 	struct kevent ev;
-// 	EV_SET(&ev, fd, filter, EV_ADD, 0, 0, NULL);
-// 	if (kevent(this->kq, &ev, 1, NULL, 0, NULL) == -1)
-// 	{
-// 		std::cout <<"im here eeee\n";
-// 		perror("kevent register fd");
-// 		exit(EXIT_FAILURE);
-// 	}
-// }
-#include <cerrno>
-#include <cstring>
-void Server::registerEvents(int fd, int16_t filter) {
+
+
+void Server::registerEvents(int fd, int16_t filter)
+{
 	struct kevent ev;
 	EV_SET(&ev, fd, filter, EV_ADD, 0, 0, NULL);
-
-	if (kevent(this->kq, &ev, 1, NULL, 0, NULL) == -1) {
+	if (kevent(this->kq, &ev, 1, NULL, 0, NULL) == -1) 
 		exit(EXIT_FAILURE);
-	}
 }
 
 std::string readLine(int fd) 
@@ -124,7 +111,6 @@ std::string readLine(int fd)
 	{
 		if (channelClients[i]->getSocketFd()!= -1)
 			registerEvents( channelClients[i]->getSocketFd(), EVFILT_WRITE);
-			
 	}
 	
  }
@@ -132,20 +118,6 @@ std::string readLine(int fd)
 std::string Server::getServPass() const
 {
     return this->_servPass;
-}
-
-void Server::authClient(Client &sender)
-{
-	std::cout << "---------Auth------------\n";
-	std::cout << "client Nick: " << sender.getNick() << std::endl;
-	std::cout << "client User: " << sender.getUser() << std::endl;
-	std::cout << "client Name: " << sender.getName() << std::endl;
-	std::cout << "client Pass: " << sender.getPass() << std::endl;
-	std::cout << "-------------------------\n\n";
-    if (!sender.getNick().empty() && !sender.getUser().empty() && sender.getPass())
-	{
-		sender.setAuth(true);
-	}
 }
 
 const Client *getClientObject(int fd,std::vector<Client *> ClientsToSend)
@@ -158,29 +130,46 @@ const Client *getClientObject(int fd,std::vector<Client *> ClientsToSend)
 	return(NULL);
 }
 
-void Server::deregisterEvent(int fd, int filterType) {
+void Server::deregisterEvent(int fd, int filterType) 
+{
     struct kevent evSet;
     EV_SET(&evSet, fd, filterType, EV_DELETE, 0, 0, NULL);
     kevent(this->kq, &evSet, 1, NULL, 0, NULL);
 }
-// void removeClientSilently(Client * client);
-// std:: map <std::string, Channel * > _channels
-void Server:: removeClientFromChannels(Client *client)
+
+void Server::sendMessage(int fd)
 {
-	// for(size_t i =0 ; i < client->getChannels().size();i++)
-	// {
-	// 	std::cout << "im here in removeClientFromChannels \n";
-	// 	_channels[client->getChannels()[i]]->removeClientSilently(client);
-	// }
+	Client *client = getClientByFd(fd);
+	if (client && !client->getBuffer().empty())
+	{
+		ssize_t written = write(fd, client->getBuffer().c_str(), client->getBuffer().size());
+		if (written > 0) 
+			client->clearBuffer();
+		deregisterEvent(fd, EVFILT_WRITE); 
+	}
+}
+
+void Server:: cleanupAfterClient(Client *client, int fd)
+{
 	client->destroyClient();
 	std::vector <std::string> client_channels= *client->getChannels();
 	for(size_t i =0; i < client_channels.size();i++)
 	{
 		_channels[client_channels[i]]->removeClientSilently(client);
-		
 		if((_channels[client_channels[i]])->getClients().size()==0)
-				delete _channels[client_channels[i]];}
+				delete _channels[client_channels[i]];
+	}
 	delete client;
+	deregisterEvent(fd,EVFILT_READ);
+	clients_list.erase(fd);
+}
+void Server::handleRecivers(std::string text,int fd)
+{
+	std::vector <Client *> toSend;
+	toSend = determinCommandSide(text, *getClientByFd(fd));
+	if(toSend[0]->getBuffer().size() ==0)
+		toSend[0]->setBuffer("\n");
+	registerChannelCients(toSend); 
 }
 
 void Server :: handleEvents()
@@ -188,7 +177,6 @@ void Server :: handleEvents()
 	std::string text;
 	registerEvents(this -> _servFd,EVFILT_READ);
 	struct kevent ev[MAX_EVENTS];
-	std::vector <Client *> toSend;
 	while (true)
 	{
 	   int  en =  kevent(this->kq, NULL, 0, ev,MAX_EVENTS , NULL) ;
@@ -198,52 +186,27 @@ void Server :: handleEvents()
 			if(event.ident == this ->_servFd)
 			{
 				int client_fd = accept(this ->_servFd,NULL,NULL);
-				std::cout<<"one client has been connected at fd -> "<<client_fd<<"\n";
 				registerEvents(client_fd,EVFILT_READ);
 			}
 			else if (event.filter == EVFILT_READ)
 			{
 				Client *client = getClientByFd(event.ident);
 				if (client == NULL)
-				{
-					// std::cout <<"im here the client is null\n";
-						clients_list[event.ident] = new Client(event.ident);}
+						clients_list[event.ident] = new Client(event.ident);
 				text = readLine(event.ident);
 				if (text.size()==0 && text.empty())
 				{
-					Client *client = getClientByFd(event.ident);
-					removeClientFromChannels(client);
-					deregisterEvent(event.ident,EVFILT_READ);
-					clients_list.erase(event.ident);
+					cleanupAfterClient(client, event.ident);
 					continue;
 				}
 				else if(text.size()==1 && text[0] == '\n')
 					continue;
-				toSend = determinCommandSide(text, *getClientByFd(event.ident));
-				if(toSend[0]->getBuffer().size() ==0)
-				toSend[0]->setBuffer("\n");
-				// this->authClient(*client);
-				std::cout<<"command: " << text;
-				registerChannelCients(toSend); 
+				handleRecivers(text, event.ident);
 			}
 			else if (event.filter == EVFILT_WRITE)
-			{
-				Client *client = getClientByFd(event.ident);
-				
-				if (client && !client->getBuffer().empty())
-				{
-					std::cout << "buffer is:	" << client->getBuffer().c_str() << std::endl;
-					ssize_t written = write(event.ident, client->getBuffer().c_str(), client->getBuffer().size());
-					if (written > 0) {
-						client->clearBuffer();
-					}
-					deregisterEvent(event.ident, EVFILT_WRITE); 
-				}
-			}
+				sendMessage(event.ident);
 	   }
-
 	}
-
 }
 
 Channel * Server::getChannel (std::string name)

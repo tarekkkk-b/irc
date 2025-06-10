@@ -75,10 +75,6 @@ std::string Client::getPrefix() const
 {
 	return this->prefix;
 }
-void Client::setAuth(bool status)
-{
-	this->authenticated = status;
-}
 
 void Client::setBuffer(const std::string &message)
 {
@@ -91,18 +87,34 @@ void Client::setPrefix()
 {
 	if (this->authenticated)
 	{
-		this->prefix = ":" + this->getNick() + "!" + this->getUser() + "@localhost"; 
+		this->prefix = this->getNick() + "!" + this->getUser() + "@localhost"; 
 	}
 }
-void Client:: clearBuffer()
+
+void Client::printWelcome()
+{
+	std::string first = ":ircserver 001 " + this->getNick() + " :Welcome to the Internet Relay Network " + this->getPrefix() + "\r\n";
+	std::string second = ":ircserver 002 " + this->getNick() + " :Your host is ircserver, running version 1.0\r\n";
+	std::string third = ":ircserver 003 " + this->getNick() + " :This server was created Tue Jun 10 2025 at 15:00\r\n";
+	std::string fourth = ":ircserver 004 " + this->getNick() + " ircserver 1.0 it klo\r\n";
+
+	write (this->socketFd, first.c_str(), first.size());
+	write (this->socketFd, second.c_str(), second.size());
+	write (this->socketFd, third.c_str(), third.size());
+	write (this->socketFd, fourth.c_str(), fourth.size());
+}
+
+void Client::clearBuffer()
 {
 	this->buffer.clear();
 }
 std::vector < Client * > Client::setUser(std::vector<std::string> _username, const Server &server)
 {
 	(void)server;
-	std::string params = "461: " + this->getUser() +  "USER: Not enough parameters.\n";
-	std::string registered = "462: " +  this->getUser() + ": You may not reregister.\n";
+	std::string nick = this->getNick().empty() ? "*" : this->getNick();
+
+	std::string params = ":ircserver 461 " + nick + "USER :Not enough parameters\r\n";
+	std::string registered  = ":ircserver 462 " + nick + " :You may not reregister\r\n";
 	std::string _realname = "";
 
 	this->buffer = "";
@@ -122,6 +134,12 @@ std::vector < Client * > Client::setUser(std::vector<std::string> _username, con
 			_realname += _username[i];
 		}
 		this->setName(_realname);
+	}
+	if (this->checked && !this->getNick().empty() && !this->getUser().empty() && !this->authenticated)
+	{
+		this->authenticated = true;
+		this->getPrefix();
+		this->printWelcome();
 	}
 	return std::vector< Client *>(1, this);
 }
@@ -147,19 +165,30 @@ static bool checkValidNick(std::string _nickame)
 
 std::vector < Client * > Client::setNick(const std::vector<std::string> _nickname, Server &server)
 {
-	std::string noNick = "431: No nickname given\n";
-	std::string erroneus = "432: "  + _nickname[1] + " : Erroneus nickname\n";
-	std::string inUse = "433: "  + _nickname[1] + " : Nickname is already in use\n";
+	std::string nick = this->getNick().empty() ? "*" : this->getNick();
+
+	std::string noNick = ":ircserver 431 " + nick + " :No nickname given\r\n";
+	std::string erroneus = ":ircserver 432 " + nick + " " + _nickname[1] + " :Erroneous nickname\r\n";
+	std::string inUse = ":ircserver 433 " + nick + " " + _nickname[1] + " :Nickname is already in use\r\n";
+	std::string params = ":ircserver 461 " + nick + "NICK :Not enough parameters\r\n";
 
 	this->buffer = "";
 	if (_nickname.size() < 2)
 		this->buffer = noNick;
+	else if (_nickname.size() > 2)
+		this->buffer = params;
 	else if (checkInUse(_nickname[1], server))
 		this->buffer = inUse;
 	else if (!checkValidNick(_nickname[1]))
 		this->buffer = erroneus;
 	else
 		this->nickname = _nickname[1];
+	if (this->checked && !this->getNick().empty() && !this->getUser().empty() && !this->authenticated)
+	{
+		this->authenticated = true;
+		this->setPrefix();
+		this->printWelcome();
+	}
 	return std::vector< Client *>(1, this);
 }
 
@@ -170,9 +199,11 @@ void Client::setName(const std::string _name)
 
 std::vector < Client * > Client::setPass(const std::vector<std::string> _pass, const Server &server)
 {
-	std::string params = "461: PASS: Not enough parameters.\n";
-	std::string registered = "462: You may not reregister.\n";
-	std::string mismatch = "464: Password incorrect.\n";
+	std::string nick = this->getNick().empty() ? "*" : this->getNick();
+
+	std::string params = ":ircserver 461 " + nick + "PASS :Not enough parameters\r\n";
+	std::string registered = ":ircserver 462 " + nick + " You may not reregister.\r\n";
+	std::string mismatch = ":ircserver 464 " + nick + " Password incorrect.\r\n";
 
 	if (this->checked)
 	{
@@ -188,6 +219,12 @@ std::vector < Client * > Client::setPass(const std::vector<std::string> _pass, c
 	}
 	else
 		this->buffer = params;
+	if (this->checked && !this->getNick().empty() && !this->getUser().empty() && !this->authenticated)
+	{
+		this->authenticated = true;
+		this->setPrefix();
+		this->printWelcome();
+	}
 	return std::vector< Client *>(1, this);
 }
 
