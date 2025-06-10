@@ -14,6 +14,7 @@ class Channel
 		std::string _password;
 		std::string _topic;
 		int usersLimit;
+		int _numberOfClients;
 
 		bool isInviteOnly;
 		bool isTopicRestricted;
@@ -36,6 +37,7 @@ class Channel
 		std::vector <Client * > init(Client * channelCreator);
 		std::string getName() const;
 		std::vector < Client * > getRecievers(Client * sender, int withSender);
+		int getNumberOfClients();
 		
 		std::vector < Client * > addClient(Client * client, std::string password = "");
 		std::vector < Client * > removeClient(Client * commander, Client * client);
@@ -70,7 +72,6 @@ class Channel
 
 		std::vector < Client * > getClients();
 		void removeClientSilently( Client * client);
-		// std::vector < Client * > Channel:: getClients()
 
 };
 
