@@ -37,12 +37,16 @@ std::vector < Client * > Channel::getRecievers(Client * sender, int withSender)
 
 std::vector <Client * >	Channel::addClient(Client * client, std::string password)
 {
-	std::string clientExists = "443: " + client->getNick() + " " + this->_name + " :is already on channel\r\n";
-	std::string fullChannel = "471: " + client->getNick() + " " + this->_name + " :Cannot join channel (+l)\r\n";
-	std::string isInviteOnly = "473: " + client->getNick() + " " + this->_name + " :Cannot join channel (+i)\r\n";
-	std::string hasPass = "475: " + client->getNick() + " " + this->_name + " :Cannot join channel (+k)\r\n";
-	std::string message;
-	std::string joinMsg = ":" + client->getPrefix() + " JOIN :" + _name;
+	std::string clientExists = ":ircserver 443 " + client->getNick() + " " + this->_name + " :is already on channel\r\n";
+	std::string fullChannel = ":ircserver 471 " + client->getNick() + " " + this->_name + " :Cannot join channel (+l)\r\n";
+	std::string isInviteOnly = ":ircserver 473 " + client->getNick() + " " + this->_name + " :Cannot join channel (+i)\r\n";
+	std::string hasPass = ":ircserver 475 " + client->getNick() + " " + this->_name + " :Cannot join channel (+k)\r\n";
+	std::string joinMsg = ":" + client->getPrefix() + " JOIN :" + _name + "\r\n";;
+	std::string message = joinMsg;
+	std::string topicReply = ":ircserver 332 " + client->getNick() + " " + this->_name + " :" + this->_topic + "\r\n";
+	std::string names =   ":ircserver 353 " + client->getNick() + " = " + this->_name + " :";
+	// :server 366 <nick> #channel :End of /NAMES list.
+	std::string endOfNames =   ":ircserver 366 " + client->getNick() + " " + this->_name + " :End of /NAMES list.\r\n" ;
 	
 	if (clientIsMember(client))
 		return setClientsBuffer(std::vector<Client *>(1, client), clientExists);
@@ -56,10 +60,9 @@ std::vector <Client * >	Channel::addClient(Client * client, std::string password
 	if (clientIsInvited(client))
 		uninviteClient(client);
 	this->_clients.push_back(client);
-	message += joinMsg;
 	if (!this->_topic.empty())
-		message += client->getNick() + " " + this->_name + " :" + this->_topic + "\n";
-	message += client->getNick() + " " + this->getName() + " :";
+		message +=topicReply;
+	message += names;
 	for (unsigned long i = 0; i < _clients.size(); i++)
 	{
 		if (clientIsOperator(_clients[i]))
@@ -68,8 +71,9 @@ std::vector <Client * >	Channel::addClient(Client * client, std::string password
 		if ((unsigned long) i != _clients.size() - 1)
 			message += " ";
 	}
-	setClientsBuffer(std::vector< Client*>(1, client), message + "\r\n");
-	setClientsBuffer(getRecievers(client, 0), joinMsg + "\r\n");
+	message = message + "\r\n" + endOfNames;
+	setClientsBuffer(std::vector< Client*>(1, client), message);
+	setClientsBuffer(getRecievers(client, 0), joinMsg);
 	return getRecievers(client, 1);
 }
 

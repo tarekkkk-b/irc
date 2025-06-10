@@ -2,12 +2,13 @@
 
 std::vector <Client * > Server::handleInvite(std::vector<std::string> command, Client & sender)
 {	
-	std::string noSuchNick = ":ircserver 401 " + sender.getNick() + " " + command[0] + " :No such nick\r\n";
-	std::string noSuchNickName = ":ircserver 406 " + sender.getNick() + " " + command[0] + " :There was no such nickname\r\n";
-	std::string notEnoughParams = ":ircserver 461 " + sender.getNick() + " " + command[0] + " :Not enough parameters\r\n";
-	
+	std::string notEnoughParams = ":ircserver 461 " + sender.getNick() + " INVITE :Not enough parameters\r\n";
 	if (command.size() != 2)
 		return setClientsBuffer(std::vector< Client*>(1, &sender), notEnoughParams);
+
+	std::string noSuchNick = ":ircserver 401 " + sender.getNick() + " " + command[0] + " :No such nick\r\n";
+	std::string noSuchNickName = ":ircserver 406 " + sender.getNick() + " " + command[0] + " :There was no such nickname\r\n";
+	
 	if (!getClientByNick(command[0]))
 		return setClientsBuffer(std::vector< Client*>(1, &sender), noSuchNickName);
 	if (command[1][0] == '#')

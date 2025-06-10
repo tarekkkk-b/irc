@@ -7,7 +7,7 @@ std::vector <Client * > Server::handlePrivMsg(std::string msg, std::vector<std::
 	std::string noSuchNick = "401: " + sender.getNick() + " " + command[0] + " :No such nick\n";
 	std::string message = sender.getNick() + " :" + msg;
 	if (command.size() == 0)
-	return setClientsBuffer(std::vector< Client*>(1, &sender), noRecipient);
+		return setClientsBuffer(std::vector< Client*>(1, &sender), noRecipient);
 	if (command[0][0] == '#')
 	{
 		Channel * channel = getChannel(command[0]);

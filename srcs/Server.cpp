@@ -97,12 +97,7 @@ void Server::registerEvents(int fd, int16_t filter) {
 	struct kevent ev;
 	EV_SET(&ev, fd, filter, EV_ADD, 0, 0, NULL);
 
-	std::cerr << "[DEBUG] Registering fd=" << fd << ", filter=" << filter << std::endl;
-
 	if (kevent(this->kq, &ev, 1, NULL, 0, NULL) == -1) {
-		int err = errno;
-		std::cout<< fd <<"fd"<< filter<<"filter\n";
-		std::cerr << "kevent register fd failed: hereee " << strerror(err) << std::endl;
 		exit(EXIT_FAILURE);
 	}
 }
@@ -179,7 +174,6 @@ void Server:: removeClientFromChannels(Client *client)
 	// }
 	client->destroyClient();
 	std::vector <std::string> client_channels= *client->getChannels();
-	std::cout<<"client->getChannels().size()"<<client_channels.size()<<"\n";
 	for(size_t i =0; i < client_channels.size();i++)
 	{
 		_channels[client_channels[i]]->removeClientSilently(client);
@@ -217,7 +211,6 @@ void Server :: handleEvents()
 				text = readLine(event.ident);
 				if (text.size()==0 && text.empty())
 				{
-					std::cout<< "im here in ctrl c\n";
 					Client *client = getClientByFd(event.ident);
 					removeClientFromChannels(client);
 					deregisterEvent(event.ident,EVFILT_READ);
@@ -227,7 +220,6 @@ void Server :: handleEvents()
 				else if(text.size()==1 && text[0] == '\n')
 					continue;
 				toSend = determinCommandSide(text, *getClientByFd(event.ident));
-				std::cout <<toSend[0]->getBuffer().size()<<"getBuffer().size()"<<"\n";
 				if(toSend[0]->getBuffer().size() ==0)
 				toSend[0]->setBuffer("\n");
 				// this->authClient(*client);
