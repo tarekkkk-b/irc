@@ -5,6 +5,7 @@ Channel::Channel(std::string const name) : isInviteOnly(false),
 {
 	this->_name = name;
 	_topic = "";
+	this->_numberOfClients = 0;
 }
 
 Channel::~Channel()
