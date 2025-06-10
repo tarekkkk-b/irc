@@ -63,7 +63,6 @@ std::vector <Client * > Server::parseChannelCommand(std::string message, Client 
 		return setClientsBuffer(std::vector< Client*>(1, &sender), notRegistered);
 	std::string commands[] = { "JOIN", "PRIVMSG", "INVITE", "TOPIC", "KICK", "MODE" };
 
-	std::cout << std::endl;
 	if (command[0] == "JOIN") // and # of params
 		return (command.erase(command.begin()), handleJoin(command, sender));
 	if (command[0] == "PRIVMSG")

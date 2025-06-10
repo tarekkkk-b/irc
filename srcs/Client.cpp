@@ -243,8 +243,8 @@ void Client:: destroyClient()
 	this->socketFd = -1;
 
 }
-std::vector<std::string> *Client:: getChannels()
+std::vector<std::string> &Client:: getChannels()
 {
-	return(&this-> channels);
+	return(this-> channels);
 }
 

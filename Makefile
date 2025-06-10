@@ -1,3 +1,4 @@
+# CPP = c+
 CPP = c++
 CPPFLAGS = -Wall -Wextra -Werror -std=c++98 -Iinc -fsanitize=address -g
 COMMANDS = srcs/commands
@@ -6,11 +7,34 @@ CPPFILES = srcs/Server.cpp main.cpp srcs/Client.cpp srcs/Channel.cpp srcs/redire
 			$(COMMANDS)/mode.cpp $(COMMANDS)/privmsg.cpp $(COMMANDS)/topic.cpp
 NAME = ircserv
 
+OS := $(shell uname -s)
+ifeq ($(OS), Linux)
+	# Check if libkqueue is installed
+	IFKQUEUE := $(shell if [ -f /usr/local/include/kqueue/sys/event.h ]; then echo "found"; else echo "missing"; fi)
+	CXXFLAGS += -I/usr/local/include
+	LDFLAGS = -L/usr/local/lib -lkqueue
+endif
 
-all: $(NAME)
+install-deps:
+ifeq ($(OS), Linux)
+ifeq ($(IFKQUEUE), missing)
+	@echo "$(YELLOW)Installing libkqueue from GitHub...$(RESET)"
+	-@apt update && apt install -y g++ gcc make cmake git 
+	@if [ ! -d libkqueue ]; then git clone https://github.com/mheily/libkqueue.git; fi
+	-@cd libkqueue && mkdir -p build && cd build && cmake .. && make
+	@echo "$(YELLOW)Installing libkqueue to system...$(RESET)"
+	-@cd libkqueue/build && make install
+	-@ldconfig
+	@echo "$(GREEN)libkqueue installed successfully$(RESET)"
+else
+	@echo "$(GREEN)libkqueue is already installed$(RESET)"
+endif
+endif
+
+all: install-deps $(NAME)
 
 $(NAME): $(CPPFILES)
-	$(CPP) $(CPPFLAGS) $(CPPFILES) -o $(NAME)
+	$(CPP) $(CPPFLAGS) $(CPPFILES) -o $(NAME) $(LDFLAGS)
 
 clean:
 	rm -rf $(NAME)
@@ -19,3 +43,5 @@ fclean:
 	rm -rf $(NAME)
 
 re: clean all
+
+

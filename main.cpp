@@ -22,13 +22,15 @@ void signalHandler(int signal)
     {
         if(SERVFD!= -1)
             close (SERVFD);
+        #ifdef __linux__
+            exit(0);
+        #endif
         if(KQ != -1)
             close (KQ);
         exit(0);
     }
 }
 #include <signal.h>
-    
 int main(int argc, char **argv)
 {
     signal (SIGINT,signalHandler);
