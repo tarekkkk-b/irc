@@ -1,6 +1,6 @@
 # CPP = c+
 CPP = c++
-CPPFLAGS = -Wall -Wextra -Werror -std=c++98 -Iinc 
+CPPFLAGS = -Wall -Wextra -Werror -std=c++98 -Iinc -fsanitize=address -g3
 COMMANDS = srcs/commands
 CPPFILES = srcs/Server.cpp main.cpp srcs/Client.cpp srcs/Channel.cpp srcs/redirect.cpp \
 			$(COMMANDS)/invite.cpp $(COMMANDS)/join.cpp $(COMMANDS)/kick.cpp \

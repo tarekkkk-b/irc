@@ -229,11 +229,9 @@ std::vector < Client * > Client::setPass(const std::vector<std::string> _pass, c
 
 void Client:: destroyClient()
 {
-	std::cout << "im here "<<"\n";
 	this->checked = 0;
 	authenticated = 0;
 	close (socketFd);
-	
 	buffer.clear();
 	this->realname = "";
 	this->username = "";
@@ -243,6 +241,6 @@ void Client:: destroyClient()
 }
 std::vector<std::string> &Client:: getChannels()
 {
-	return(this-> channels);
+	return(this->channels);
 }
 

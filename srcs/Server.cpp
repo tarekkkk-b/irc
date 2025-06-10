@@ -163,18 +163,21 @@ void Server::sendMessage(int fd)
 
 void Server:: cleanupAfterClient(Client *client, int fd)
 {
-	
-	std::vector <std::string> client_channels= client->getChannels();
-	for(size_t i =0; i < client_channels.size();i++)
+	if (!client)
 	{
-		_channels[client_channels[i]]->removeClientSilently(client);
-		if((_channels[client_channels[i]])->getClients().size()==0)
-		{	
+		return ;
+	}
+		std::vector <std::string> client_channels = client->getChannels();
+		for(size_t i =0; i < client_channels.size();i++)
+		{
+			_channels[client_channels[i]]->removeClientSilently(client);
+			if((_channels[client_channels[i]])->getClients().size()==0)
+			{	
 				delete _channels[client_channels[i]];
 				_channels.erase(client_channels[i]);
 				client_channels.erase(client_channels.begin() + i);
+			}
 		}
-	}
 	client ->destroyClient();
 	delete client;
 	deregisterEvent(fd,EVFILT_READ);
