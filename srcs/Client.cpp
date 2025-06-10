@@ -123,7 +123,7 @@ std::vector < Client * > Client::setUser(std::vector<std::string> _username, con
 	(void)server;
 	std::string nick = this->getNick().empty() ? "*" : this->getNick();
 
-	std::string params = ":ircserver 461 " + nick + "USER :Not enough parameters\r\n";
+	std::string params = ":ircserver 461 " + nick + " USER :Not enough parameters\r\n";
 	std::string registered  = ":ircserver 462 " + nick + " :You may not reregister\r\n";
 	std::string _realname = "";
 
@@ -203,7 +203,7 @@ std::vector < Client * > Client::setPass(const std::vector<std::string> _pass, c
 {
 	std::string nick = this->getNick().empty() ? "*" : this->getNick();
 
-	std::string params = ":ircserver 461 " + nick + "PASS :Not enough parameters\r\n";
+	std::string params = ":ircserver 461 " + nick + " PASS :Not enough parameters\r\n";
 	std::string registered = ":ircserver 462 " + nick + " You may not reregister.\r\n";
 	std::string mismatch = ":ircserver 464 " + nick + " Password incorrect.\r\n";
 
