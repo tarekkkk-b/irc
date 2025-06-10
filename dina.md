@@ -1,18 +1,18 @@
 join, topic, spaces before the command
 JOIN: 
-~    - Join a new channel (channel creation) ✅
-~    - Join an existing channel ✅
-~    - Invalid channel name ✅
-~    - Join a channel with correct key ✅
-~    - Join invite-only channel with invitation ✅
-~    - join multiple channels with keys ✅
-~    - Join multiple channels ✅ 
-~    - join a channel user is already in ✅
+~    - Join a new channel (channel creation) ✅ v
+~    - Join an existing channel ✅ ✅
+~    - Invalid channel name ✅ ✅
+~    - Join a channel with correct key ✅✅
+~    - Join invite-only channel with invitation ✅✅
+~    - join multiple channels with keys ✅ ✅
+~    - Join multiple channels ✅ ✅
+~    - join a channel user is already in ✅✅
 ~    - JOIN 0 (leave all channels) ✅
-~    - Join with too many keys ✅
-~    - Join with wrong key ✅
-~    - Join invite-only channel without invitation✅ 
-~    - Join full channel ✅
+~    - Join with too many keys ✅✅
+~    - Join with wrong key ✅✅
+~    - Join invite-only channel without invitation✅ ✅
+~    - Join full channel ✅ ✅
 ~
 ~TOPIC:
 ~    -  Viewing topic when no topic is set ✅
