@@ -5,6 +5,7 @@
 # include <vector>
 # include "Client.hpp"
 # include "types.hpp"
+#include <sstream>
 
 class Channel
 {
