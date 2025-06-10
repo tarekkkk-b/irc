@@ -177,7 +177,7 @@ std::vector < Client * > Client::setNick(const std::vector<std::string> _nicknam
 	std::string noNick = ":ircserver 431 " + nick + " :No nickname given\r\n";
 	std::string erroneus = ":ircserver 432 " + nick + " " + _nickname[1] + " :Erroneous nickname\r\n";
 	std::string inUse = ":ircserver 433 " + nick + " " + _nickname[1] + " :Nickname is already in use\r\n";
-	std::string params = ":ircserver 461 " + nick + "NICK :Not enough parameters\r\n";
+	std::string params = ":ircserver 461 " + nick + " NICK :Not enough parameters\r\n";
 
 	this->buffer = "";
 	if (_nickname.size() < 2)
