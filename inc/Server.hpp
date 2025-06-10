@@ -73,8 +73,6 @@ class Server
 
         std::string getServPass() const;
 
-        void    authClient(Client &sender);
-
         std::vector<Client * > determinCommandSide(const std::string msg, Client &sender);
 
         Channel * getChannel (std::string name);

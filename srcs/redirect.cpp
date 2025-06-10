@@ -14,7 +14,9 @@ static std::vector<std::string> splitWords(const std::string msg)
 std::vector <Client * >    Server::determinCommandSide(const std::string msg, Client &sender)
 {
     std::vector<std::string> words = splitWords(msg);
-    std::string error_msg = "421: " + sender.getName() + " " + words[0] + " " + ": Unknown Command\n";
+	std::string nick = sender.getNick().empty() ? "*" : sender.getNick();
+	std::string error_msg;
+	error_msg = ":ircserver 421 " + nick + " " + words[0] + " :Unknown Command\r\n";
     std::string commands[] = { "JOIN", "PRIVMSG", "INVITE", "TOPIC", "KICK", "MODE", "NICK", "USER", "PASS", "INVALID" };
     int i = 0;
     while (i < 10)
@@ -26,8 +28,7 @@ std::vector <Client * >    Server::determinCommandSide(const std::string msg, Cl
         i++;
     }
     if (i == 9)
-      { 
-		 sender.setBuffer(error_msg);}
+		sender.setBuffer(error_msg);
     return ((i >= 0 && i <= 5) ? this->parseChannelCommand(msg, sender) : (i >= 6 && i <= 8) ? this->parseClientCommand(words, sender) : std::vector< Client *>(1, &sender));
 }
 
@@ -58,7 +59,6 @@ std::vector <Client * > Server::parseChannelCommand(std::string message, Client 
 	std::vector<std::string> command = splitWords(message);
 	std::string unknownCommand = "421: " + sender.getNick() + " " + command[0] + " :Unknown command\n";
 	std::string notRegistered = "451: " + sender.getNick() + " :You have not registered\n";
-	this->authClient(sender);
 	if (!sender.getAuth())
 		return setClientsBuffer(std::vector< Client*>(1, &sender), notRegistered);
 	std::string commands[] = { "JOIN", "PRIVMSG", "INVITE", "TOPIC", "KICK", "MODE" };

@@ -120,20 +120,6 @@ std::string Server::getServPass() const
     return this->_servPass;
 }
 
-void Server::authClient(Client &sender)
-{
-	std::cout << "---------Auth------------\n";
-	std::cout << "client Nick: " << sender.getNick() << std::endl;
-	std::cout << "client User: " << sender.getUser() << std::endl;
-	std::cout << "client Name: " << sender.getName() << std::endl;
-	std::cout << "client Pass: " << sender.getPass() << std::endl;
-	std::cout << "-------------------------\n\n";
-    if (!sender.getNick().empty() && !sender.getUser().empty() && sender.getPass())
-	{
-		sender.setAuth(true);
-	}
-}
-
 const Client *getClientObject(int fd,std::vector<Client *> ClientsToSend)
 {
 	for(size_t i = 0; i < ClientsToSend.size();i++)
