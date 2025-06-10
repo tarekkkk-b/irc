@@ -44,6 +44,7 @@ class Client
 		void setBuffer(const std::string &message);
 		void setPrefix();
 		void printWelcome();
+		void welcoming();
 		void clearBuffer();
 		void setName(const std::string _name);
 

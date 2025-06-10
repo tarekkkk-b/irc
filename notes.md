@@ -74,7 +74,7 @@ channel:
 		* user does not exist in server ✅
 		* kick yourself ✅
 	- commander is not moderator ✅
-	- KICK/disconnect the last client ❌
+	- KICK/disconnect the last client ✅
 
 4. INVITE
 	- commander is moderator ✅
@@ -85,7 +85,7 @@ channel:
 5. TOPIC
 	- get topic vs set topic ✅
 	- commander is moderator ✅
-		* syntax of the topic ❌
+		* syntax of the topic ✅
 	- +t and commander is not moderator ✅
 
 6. MODE

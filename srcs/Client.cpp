@@ -104,6 +104,16 @@ void Client::printWelcome()
 	write (this->socketFd, fourth.c_str(), fourth.size());
 }
 
+void Client::welcoming()
+{
+	if (this->checked && !this->getNick().empty() && !this->getUser().empty() && !this->authenticated)
+	{
+		this->authenticated = true;
+		this->setPrefix();
+		this->printWelcome();
+	}
+}
+
 void Client::clearBuffer()
 {
 	this->buffer.clear();
@@ -122,6 +132,8 @@ std::vector < Client * > Client::setUser(std::vector<std::string> _username, con
 		this->buffer = registered;
 	else if (_username.size() < 5)
 		this->buffer = params;
+	else if (_username[2] != "0" || _username[3] != "*")
+			this->buffer = params;
 	else
 	{
 		this->username = _username[1];
@@ -135,12 +147,7 @@ std::vector < Client * > Client::setUser(std::vector<std::string> _username, con
 		}
 		this->setName(_realname);
 	}
-	if (this->checked && !this->getNick().empty() && !this->getUser().empty() && !this->authenticated)
-	{
-		this->authenticated = true;
-		this->getPrefix();
-		this->printWelcome();
-	}
+	this->welcoming();
 	return std::vector< Client *>(1, this);
 }
 
@@ -183,12 +190,7 @@ std::vector < Client * > Client::setNick(const std::vector<std::string> _nicknam
 		this->buffer = erroneus;
 	else
 		this->nickname = _nickname[1];
-	if (this->checked && !this->getNick().empty() && !this->getUser().empty() && !this->authenticated)
-	{
-		this->authenticated = true;
-		this->setPrefix();
-		this->printWelcome();
-	}
+	this->welcoming();
 	return std::vector< Client *>(1, this);
 }
 
@@ -219,12 +221,7 @@ std::vector < Client * > Client::setPass(const std::vector<std::string> _pass, c
 	}
 	else
 		this->buffer = params;
-	if (this->checked && !this->getNick().empty() && !this->getUser().empty() && !this->authenticated)
-	{
-		this->authenticated = true;
-		this->setPrefix();
-		this->printWelcome();
-	}
+	this->welcoming();
 	return std::vector< Client *>(1, this);
 }
 
