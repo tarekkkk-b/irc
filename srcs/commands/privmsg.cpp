@@ -2,6 +2,7 @@
 
 std::vector <Client * > Server::handlePrivMsg(std::string msg, std::vector<std::string> command, Client & sender)
 {
+	std::cout <<"THE MESSAGE IS -> "<<msg<<"\n";
 	std::string noRecipient = ":ircserver 411 " + sender.getNick() + " :No recipient given (PRIVMSG)\r\n";
 	if (command.size() == 0)
 		return setClientsBuffer(std::vector< Client*>(1, &sender), noRecipient);

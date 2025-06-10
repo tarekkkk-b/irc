@@ -21,9 +21,9 @@ void signalHandler(int signal)
     if(signal == 2)
     {
         if(SERVFD!= -1)
-        {
             close (SERVFD);
-        }
+        if(KQ != -1)
+            close (KQ);
         exit(0);
     }
 }

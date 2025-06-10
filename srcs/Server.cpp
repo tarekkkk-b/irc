@@ -63,19 +63,30 @@ void Server:: initServerSocket()
 	server_addr.sin_port = htons(this->_servPort);
 	server_addr.sin_addr.s_addr = INADDR_ANY;
 	int yes = 1;
-	if (setsockopt(this->_servFd, SOL_SOCKET, SO_REUSEADDR, &yes, sizeof(yes)) < 0) {
+	if (setsockopt(this->_servFd, SOL_SOCKET, SO_REUSEADDR, &yes, sizeof(yes)) < 0) 
+	{
 		perror("setsockopt");
+		close (this->_servFd);
 		exit(EXIT_FAILURE);
 	}
-	if(bind(this->_servFd,(struct sockaddr*)&server_addr,sizeof(server_addr))==0)
-		listen(this->_servFd,SOMAXCONN);
+	if(bind(this->_servFd,(struct sockaddr*)&server_addr,sizeof(server_addr))<0)
+	{
+		close (this->_servFd);
+		exit(EXIT_FAILURE);
+	}
+	if(listen(this->_servFd,SOMAXCONN)<0)
+	{
+		perror("listen failed");
+		close (this->_servFd);
+        exit(EXIT_FAILURE);
+	}
 	this-> kq = kqueue();
-	KQ =this-> kq;
 	if (kq == -1)
 	{
 		perror("kqueue");
 		exit(EXIT_FAILURE);
 	}
+	KQ =this-> kq;
 	handleEvents();
 }
 
@@ -167,8 +178,8 @@ void Server::handleRecivers(std::string text,int fd)
 {
 	std::vector <Client *> toSend;
 	toSend = determinCommandSide(text, *getClientByFd(fd));
-	if(toSend[0]->getBuffer().size() ==0)
-		toSend[0]->setBuffer("\n");
+	// if(toSend[0]->getBuffer().size() == 0)
+	// 	toSend[0]->setBuffer("\n");
 	registerChannelCients(toSend); 
 }
 
