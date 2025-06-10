@@ -38,12 +38,6 @@ int main(int argc, char **argv)
             throw std::invalid_argument("Program arguments should be <port> <password>");
         int portInt = strToIntSafe(argv[1]);
         Server server(portInt, argv[2]);
-     
-        // client connect 
-        // socketfd created for him
-        // authenticate client 
-        // client join channel
-        // client send and recive messages
     }
     catch (const std::exception & e)
     {

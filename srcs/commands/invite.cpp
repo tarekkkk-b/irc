@@ -12,6 +12,7 @@ std::vector <Client * > Server::handleInvite(std::vector<std::string> command, C
 		return setClientsBuffer(std::vector< Client*>(1, &sender), noSuchNickName);
 	if (command[1][0] == '#')
 	{
+		std::string noSuchChannel = ":ircserver 403 " + sender.getNick() + " " + command[1] + " :No such channel\r\n";
 		Channel *channel = getChannel(command[1]);
 		if (channel == NULL)
 			return setClientsBuffer(std::vector< Client*>(1, &sender), noSuchChannel);

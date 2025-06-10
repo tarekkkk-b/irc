@@ -5,6 +5,7 @@
 # include <vector>
 # include "Client.hpp"
 # include "types.hpp"
+#include <sstream>
 
 class Channel
 {
@@ -22,13 +23,14 @@ class Channel
 		std::vector < Client * > _clients;
 		std::vector <Client * > _operators;
 		std::vector < Client * > _invitations;
+		
 		Channel();
-
-	public:
-
-		Channel(std::string const name);
 		Channel(const  Channel & other);
 		Channel & operator = (const Channel & rhs);
+		
+		public:
+		
+		Channel(std::string const name);
 		~Channel();
 
 		std::vector <Client * > init(Client * channelCreator);

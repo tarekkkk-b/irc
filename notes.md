@@ -42,6 +42,7 @@ channel:
 - [server-and-channel] when a channel has 0 clients -> remove from the server.
 - [channel] channel name only # should not pass
 - [client] should reciieve a message if not auhenticated
+- [channel-name] should check if channel name is valid
 -----------
 - [message-format] it needs to end with \r\n
 
@@ -107,3 +108,41 @@ channel:
 			- non-number limit ❌
 		* invallid flag ✅
 	- commander is not moderator ✅
+
+| **Client Command**            | **Description**                 | **Expected Server Message(s)**                                                                               |
+| ----------------------------- | ------------------------------- | ------------------------------------------------------------------------------------------------------------ |
+| `JOIN #channel`               | Join a channel                  | `:<nick>!<user>@<host> JOIN :#channel`                                                                       |
+|                               |                                 | `:server 332 <nick> #channel :<topic>` *(Topic)*                                                             |
+|                               |                                 | `:server 353 <nick> = #channel :@admin +user1 user2` *(NAMES list)*                                          |
+|                               |                                 | `:server 366 <nick> #channel :End of /NAMES list.`                                                           |
+| `PRIVMSG <target> <message>`  | Send private or channel message | `:<nick>!<user>@<host> PRIVMSG <target> :<message>`                                                          |
+| `KICK #channel nick [reason]` | Kick user from channel          | `:<nick>!<user>@<host> KICK #channel nick :[reason]`                                                         |
+| `INVITE nick #channel`        | Invite user to a channel        | `:<nick>!<user>@<host> INVITE nick :#channel`                                                                |
+| `TOPIC #channel :<topic>`     | Set or view channel topic       | **Set:** `:<nick>!<user>@<host> TOPIC #channel :<topic>`<br>**View:** `:server 332 <nick> #channel :<topic>` |
+| `MODE #channel +k pass`       | Set password/key for channel    | `:<nick>!<user>@<host> MODE #channel +k pass`                                                                |
+| `MODE #channel +i`            | Make channel invite-only        | `:<nick>!<user>@<host> MODE #channel +i`                                                                     |
+| `MODE #channel +o nick`       | Give channel operator rights    | `:<nick>!<user>@<host> MODE #channel +o nick`                                                                |
+| `MODE #channel +l limit`      | Set user limit                  | `:<nick>!<user>@<host> MODE #channel +l limit`                                                               |
+| `MODE #channel +t`            | Only ops can set topic          | `:<nick>!<user>@<host> MODE #channel +t`                                                                     |
+
+
+
+
+
+| **Code** | **Meaning**                                 | **Format (for LimeChat)**                                           |
+| -------- | ------------------------------------------- | ------------------------------------------------------------------- |
+| `401`    | ERR\_NOSUCHNICK – No such nick/channel      | `:server 401 <nick> <target> :No such nick/channel`                 |
+| `403`    | ERR\_NOSUCHCHANNEL – No such channel        | `:server 403 <nick> #channel :No such channel`                      |
+| `406`    | ERR\_WASNOSUCHNICK – Nickname not found     | `:server 406 <nick> <target> :There was no such nickname`           |
+| `411`    | ERR\_NORECIPIENT – No recipient given       | `:server 411 <nick> :No recipient given (<command>)`                |
+| `441`    | ERR\_USERNOTINCHANNEL – Not in that chan    | `:server 441 <nick> <target> #channel :They aren't on that channel` |
+| `442`    | ERR\_NOTONCHANNEL – You're not on that chan | `:server 442 <nick> #channel :You're not on that channel`           |
+| `443`    | ERR\_USERONCHANNEL – Already on channel     | `:server 443 <nick> <target> #channel :is already on channel`       |
+| `461`    | ERR\_NEEDMOREPARAMS – Missing params        | `:server 461 <nick> <command> :Not enough parameters`               |
+| `471`    | ERR\_CHANNELISFULL – Channel is full        | `:server 471 <nick> #channel :Cannot join channel (+l)`             |
+| `472`    | ERR\_UNKNOWNMODE – Unknown mode             | `:server 472 <nick> <char> :is unknown mode char to me`             |
+| `473`    | ERR\_INVITEONLYCHAN – Invite-only channel   | `:server 473 <nick> #channel :Cannot join channel (+i)`             |
+| `475`    | ERR\_BADCHANNELKEY – Incorrect channel key  | `:server 475 <nick> #channel :Cannot join channel (+k)`             |
+| `476`    | ERR\_BADCHANMASK – Bad channel name         | `:server 476 <nick> #badchan :Bad Channel Mask`                     |
+| `482`    | ERR\_CHANOPRIVSNEEDED – You're not a chanop | `:server 482 <nick> #channel :You're not channel operator`          |
+| `341`    | RPL\_INVITING – You invited someone         | `:server 341 <nick> <target> #channel`                              |

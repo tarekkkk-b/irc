@@ -34,7 +34,7 @@ std::vector <Client * >    Server::determinCommandSide(const std::string msg, Cl
 
 std::vector <Client * > Server::parseClientCommand(std::vector<std::string> msg, Client &sender)
 {
-    std::string commands[] = { "NICK", "USER", "PASS" };
+    std::string commands[] = { "NICK", "USER", "PASS"};
     int i = 0;
     while (i < 3)
     {

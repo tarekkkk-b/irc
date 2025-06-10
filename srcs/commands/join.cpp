@@ -14,6 +14,7 @@ bool Server::channelNameIsValid(const std::string &name)
 
 std::vector <Client * > Server::handleJoin(std::vector<std::string> command, Client & sender)
 {
+	std::string badMask = "476: <channel> :Bad Channel Mask\r\n";
 	std::string notEnoughParams = ":ircserver 461 " + sender.getNick() + " JOIN :Not enough parameters\r\n";
 	if (command.size() < 1 || command.size() > 2)
 		return setClientsBuffer(std::vector< Client*>(1, &sender), notEnoughParams);
@@ -25,7 +26,7 @@ std::vector <Client * > Server::handleJoin(std::vector<std::string> command, Cli
 		{
 			if (!channelNameIsValid(command[0]))
 				return setClientsBuffer(std::vector< Client*>(1, &sender), noSuchChannel);
-			_channels[command[0]] = new Channel (command[0]); // we should send to the sender
+			_channels[command[0]] = new Channel (command[0]);
 			return _channels[command[0]]->init(&sender);
 		}
 		else
