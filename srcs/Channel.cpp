@@ -276,7 +276,7 @@ std::vector <Client * >	Channel::unsetInviteOnly(Client * commander)
 std::vector <Client * >	Channel::setUserLimit(Client * commander, int limit)
 {
 	std::string noPermission = ":ircserver 482 " + commander->getNick() + " " + this->_name + " :Permission Denied- You're not channel operator\r\n";	
-	std::string limitSet = ":" + commander->getPrefix() + " MODE " + this->_name + " +l " + static_cast<std::ostringstream&>(std::ostringstream() << limit).str() + "\r\n";
+	std::string limitSet = ":" + commander->getPrefix() + " MODE " + this->_name + " +l\r\n";
 
 
 	if (!clientIsOperator(commander))
