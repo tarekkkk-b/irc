@@ -13,12 +13,13 @@ Server::Server(int port, std::string password)
 
 	std::cout << "Server initialized at port: " << this->_servPort;
 	std::cout << " | password: " << this->_servPass << std::endl;
-	this->initServerSocket();
+	
 
 	std::cout << "\n╔════════════════════════════╗\n";
 	std::cout << "║ IRC Server is listening... ║\n";
 	std::cout << "║ Port: " << _servPort << "                 ║\n";
 	std::cout << "╚════════════════════════════╝\n\n";
+	this->initServerSocket();
 }
 
 Server::Server(Server const & other)
@@ -162,14 +163,22 @@ void Server::sendMessage(int fd)
 
 void Server:: cleanupAfterClient(Client *client, int fd)
 {
-	client->destroyClient();
-	std::vector <std::string> client_channels= *client->getChannels();
-	for(size_t i =0; i < client_channels.size();i++)
+	if (!client)
 	{
-		_channels[client_channels[i]]->removeClientSilently(client);
-		if((_channels[client_channels[i]])->getClients().size()==0)
-				delete _channels[client_channels[i]];
+		return ;
 	}
+		std::vector <std::string> client_channels = client->getChannels();
+		for(size_t i =0; i < client_channels.size();i++)
+		{
+			_channels[client_channels[i]]->removeClientSilently(client);
+			if((_channels[client_channels[i]])->getClients().size()==0)
+			{	
+				delete _channels[client_channels[i]];
+				_channels.erase(client_channels[i]);
+				client_channels.erase(client_channels.begin() + i);
+			}
+		}
+	client ->destroyClient();
 	delete client;
 	deregisterEvent(fd,EVFILT_READ);
 	clients_list.erase(fd);
@@ -178,8 +187,10 @@ void Server::handleRecivers(std::string text,int fd)
 {
 	std::vector <Client *> toSend;
 	toSend = determinCommandSide(text, *getClientByFd(fd));
-	// if(toSend[0]->getBuffer().size() == 0)
-	// 	toSend[0]->setBuffer("\n");
+	#ifdef __linux__
+	if(toSend[0]->getBuffer().size() == 0)
+		toSend[0]->setBuffer("\n");
+    #endif
 	registerChannelCients(toSend); 
 }
 

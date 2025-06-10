@@ -27,12 +27,12 @@ std::vector <Client * > Server::handleJoin(std::vector<std::string> command, Cli
 			if (!channelNameIsValid(command[0]))
 				return setClientsBuffer(std::vector< Client*>(1, &sender), badMask);
 			_channels[command[0]] = new Channel (command[0]);
-			sender.getChannels()->push_back(command[0]); 
+			sender.getChannels().push_back(command[0]); 
 			return _channels[command[0]]->init(&sender);
 		}
 		else
 		{
-			sender.getChannels()->push_back(command[0]); 
+			sender.getChannels().push_back(command[0]); 
 			if (command.size() == 2)
 				return channel->addClient(& sender, command[1]);
 			return channel->addClient(& sender);	

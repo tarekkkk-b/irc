@@ -25,7 +25,7 @@ std::vector <Client * > Server::handlePrivMsg(std::string msg, std::vector<std::
 	else
 	{
 		Client * reciever = getClientByNick(command[0]);
-		if (!reciever)
+		if (!reciever || !reciever->getAuth())
 			return setClientsBuffer(std::vector< Client*>(1, &sender), noSuchNick);
 		return setClientsBuffer(std::vector< Client*>(1, reciever), message);		
 	}

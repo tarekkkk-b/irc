@@ -18,7 +18,15 @@ std::vector <Client * > Server::handleKick(std::vector<std::string> command, Cli
 		else if (!getClientByNick(command[1]))
 			return setClientsBuffer(std::vector< Client*>(1, &sender), noSuchNickName);
 		else
-			return channel->removeClient(&sender, getClientByNick(command[1]));
+		{
+			std::vector <Client *> toSendTo = channel->removeClient(&sender, getClientByNick(command[1]));
+			// if (channel->getNumberOfClients() == 0)
+			// {
+			// 	delete channel;
+			// 	_channels.erase(command[0]);
+			// }
+			return toSendTo;
+		}
 	}
 	return setClientsBuffer(std::vector< Client*>(1, &sender), noSuchNick);
 }

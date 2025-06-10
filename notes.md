@@ -49,7 +49,7 @@ channel:
 # TESTING
 * for all channel commands we have to first check that the clliennt is authenticated
 1. JOIN
-	- channel name syntax 
+	- channel name syntax ✅
 	- Join a channel that already exists vs. a new one ✅
 	- can join ✅
 	- can't join
@@ -57,15 +57,13 @@ channel:
 		* +k and wrong password ✅
 		* +l and is full ✅
 		* +l and is NOT full ✅
-	- Try joining multiple channels at once (e.g. JOIN #a,#b,#c)
-	- Try joining multiple channels at once (e.g. JOIN #a,#b,#c)
 
 2. PRIVMSG
 	- can send a message to chnnel ✅
 	- can't send a message to channel ✅
 	- can send a message to a client ✅
 	- can't send a message to a client ✅
-	- send to yourself
+	- send to yourself ✅
 
 3. KICK
 	- commander is moderator 
@@ -74,40 +72,40 @@ channel:
 		* user does not exist in server ✅
 		* kick yourself ✅
 	- commander is not moderator ✅
-	- KICK/disconnect the last client ✅
+	- KICK/disconnect the last client ❌
 
 4. INVITE
-	- commander is moderator ✅
+	- commander is moderator 
 		* user does not exist ✅
-		* user is not authenticated
-	- commander is not moderator
+		* user is not authenticated ❌
+	- commander is not moderator ✅
 
 5. TOPIC
 	- get topic vs set topic ✅
-	- commander is moderator ✅
-		* syntax of the topic ✅
+	- commander is moderator 
+		* syntax of the topic 
 	- +t and commander is not moderator ✅
 
-6. MODE
+6. MODE ✅
 	- commander is moderator
-		* +i ✅
-		* -i ✅
-		* +t ✅
-		* -t ✅
-		* +k [password-syntax] ✅
-		* -k ✅
-			* when key is not set ✅
+		* +i 
+		* -i 
+		* +t 
+		* -t 
+		* +k [password-syntax] 
+		* -k 
+			* when key is not set 
 		* +o 
-			* user is not a channel member ✅
-			* user is not a server member ✅
+			* user is not a channel member 
+			* user is not a server member 
 		* -o
-			* user is not a channel member ✅
-			* user is not a server member ✅
+			* user is not a channel member 
+			* user is not a server member 
 		* +l
-			- what if users are already more than the limit? ✅
+			- what if users are already more than the limit? 
 			- non-number limit ❌
-		* invallid flag ✅
-	- commander is not moderator ✅
+		* invallid flag 
+	- commander is not moderator 
 
 | **Client Command**            | **Description**                 | **Expected Server Message(s)**                                                                               |
 | ----------------------------- | ------------------------------- | ------------------------------------------------------------------------------------------------------------ |

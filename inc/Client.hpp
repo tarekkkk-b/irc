@@ -53,5 +53,5 @@ class Client
 		std::vector < Client * > setPass(const std::vector<std::string> _pass, const Server &server);
 
 		void destroyClient();
-		std::vector<std::string> *getChannels();
+		std::vector<std::string> &getChannels();
 };

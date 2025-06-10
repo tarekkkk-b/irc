@@ -8,7 +8,7 @@ std::vector <Client * > Server::handleInvite(std::vector<std::string> command, C
 	std::string noSuchNick = ":ircserver 401 " + sender.getNick() + " " + command[0] + " :No such nick/channel\r\n";
 	std::string noSuchChannel = ":ircserver 403 " + sender.getNick() + " " + command[0] + " :No such channel\r\n";
 	std::string noSuchNickName = ":ircserver 406 " + sender.getNick() + " " + command[0] + " :There was no such nickname\r\n";
-	if (!getClientByNick(command[0]))
+	if (!getClientByNick(command[0]) || !getClientByNick(command[0])->getAuth())
 		return setClientsBuffer(std::vector< Client*>(1, &sender), noSuchNickName);
 	if (command[1][0] == '#')
 	{
