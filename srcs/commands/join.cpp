@@ -14,18 +14,18 @@ bool Server::channelNameIsValid(const std::string &name)
 
 std::vector <Client * > Server::handleJoin(std::vector<std::string> command, Client & sender)
 {
-	std::string badMask = "476: <channel> :Bad Channel Mask\r\n";
 	std::string notEnoughParams = ":ircserver 461 " + sender.getNick() + " JOIN :Not enough parameters\r\n";
 	if (command.size() < 1 || command.size() > 2)
 		return setClientsBuffer(std::vector< Client*>(1, &sender), notEnoughParams);
 	std::string noSuchChannel = ":ircserver 403 " + sender.getNick() + " " + command[0] + " :No such channel\r\n";
-	if (command[0][0] == '#')
+	std::string badMask = ":ircserver 476 " + sender.getNick() + " " + command[0] + " :Bad Channel\r\n";
+	if (command[0][0] == '#' && command[0].size() > 1)
 	{
 		Channel *channel = getChannel(command[0]);
 		if (channel == NULL)
 		{
 			if (!channelNameIsValid(command[0]))
-				return setClientsBuffer(std::vector< Client*>(1, &sender), noSuchChannel);
+				return setClientsBuffer(std::vector< Client*>(1, &sender), badMask);
 			_channels[command[0]] = new Channel (command[0]);
 			return _channels[command[0]]->init(&sender);
 		}
@@ -36,5 +36,5 @@ std::vector <Client * > Server::handleJoin(std::vector<std::string> command, Cli
 			return channel->addClient(& sender);	
 		}
 	}
-	return setClientsBuffer(std::vector< Client*>(1, &sender), noSuchChannel);
+	return setClientsBuffer(std::vector< Client*>(1, &sender), badMask);
 }
