@@ -72,21 +72,21 @@ channel:
 		* user does not exist in server ✅
 		* kick yourself ✅
 	- commander is not moderator ✅
-	- KICK/disconnect the last client 
+	- KICK/disconnect the last client ❌
 
 4. INVITE
 	- commander is moderator 
-		* user does not exist 
-		* user is not authenticated
-	- commander is not moderator
+		* user does not exist ✅
+		* user is not authenticated ❌
+	- commander is not moderator ✅
 
 5. TOPIC
-	- get topic vs set topic 
+	- get topic vs set topic ✅
 	- commander is moderator 
 		* syntax of the topic 
-	- +t and commander is not moderator 
+	- +t and commander is not moderator ✅
 
-6. MODE
+6. MODE ✅
 	- commander is moderator
 		* +i 
 		* -i 
