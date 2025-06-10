@@ -99,10 +99,11 @@ void Client::printWelcome()
 	std::string third = ":ircserver 003 " + this->getNick() + " :This server was created Tue Jun 10 2025 at 15:00\r\n";
 	std::string fourth = ":ircserver 004 " + this->getNick() + " ircserver 1.0 it klo\r\n";
 
-	write (this->socketFd, first.c_str(), first.size());
-	write (this->socketFd, second.c_str(), second.size());
-	write (this->socketFd, third.c_str(), third.size());
-	write (this->socketFd, fourth.c_str(), fourth.size());
+	this->buffer = first + second + third + fourth;
+	// write (this->socketFd, first.c_str(), first.size());
+	// write (this->socketFd, second.c_str(), second.size());
+	// write (this->socketFd, third.c_str(), third.size());
+	// write (this->socketFd, fourth.c_str(), fourth.size());
 }
 
 void Client::welcoming()
