@@ -175,6 +175,7 @@ void Server:: cleanupAfterClient(Client *client, int fd)
 				client_channels.erase(client_channels.begin() + i);
 		}
 	}
+	client ->destroyClient();
 	delete client;
 	deregisterEvent(fd,EVFILT_READ);
 	clients_list.erase(fd);

@@ -20,11 +20,11 @@ std::vector <Client * > Server::handleKick(std::vector<std::string> command, Cli
 		else
 		{
 			std::vector <Client *> toSendTo = channel->removeClient(&sender, getClientByNick(command[1]));
-			if (channel->getNumberOfClients() == 0)
-			{
-				delete channel;
-				_channels.erase(command[0]);
-			}
+			// if (channel->getNumberOfClients() == 0)
+			// {
+			// 	delete channel;
+			// 	_channels.erase(command[0]);
+			// }
 			return toSendTo;
 		}
 	}
