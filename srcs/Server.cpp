@@ -194,10 +194,14 @@ void Server::handleRecivers(std::string text,int fd)
 	registerChannelCients(toSend); 
 }
 
+
+
+
 void Server :: handleEvents()
 {
 	std::string text;
 	registerEvents(this -> _servFd,EVFILT_READ);
+	std::map <int , std::string > read_buffers;
 	struct kevent ev[MAX_EVENTS];
 	while (true)
 	{
@@ -216,14 +220,20 @@ void Server :: handleEvents()
 				if (client == NULL)
 						clients_list[event.ident] = new Client(event.ident);
 				text = readLine(event.ident);
-				if (text.size()==0 && text.empty())
+				read_buffers[event.ident] =  read_buffers[event.ident] + text;
+				if((read_buffers[event.ident].find('\n'))!= std::string::npos)
 				{
-					cleanupAfterClient(client, event.ident);
-					continue;
+					text = read_buffers[event.ident];
+					if (text.size()==0 && text.empty())
+					{
+						cleanupAfterClient(client, event.ident);
+						continue;
+					}
+					else if(text.size()==1 && text[0] == '\n')
+						continue;
+					handleRecivers(text, event.ident);
+					read_buffers[event.ident].clear();
 				}
-				else if(text.size()==1 && text[0] == '\n')
-					continue;
-				handleRecivers(text, event.ident);
 			}
 			else if (event.filter == EVFILT_WRITE)
 				sendMessage(event.ident);
