@@ -2,8 +2,11 @@
 # define SERVER_HPP
 # include <sys/socket.h>
 # include <netinet/in.h>
-// # include <sys/event.h>
+# ifdef __linux__
 # include <../libkqueue/include/sys/event.h>
+#else
+# include <sys/event.h>
+#endif
 # include <iostream>
 # include <arpa/inet.h>
 # include <vector>
