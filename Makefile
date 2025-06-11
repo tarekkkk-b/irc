@@ -1,6 +1,6 @@
 # CPP = c+
 CPP = c++
-CPPFLAGS = -Wall -Wextra -Werror -std=c++98 -Iinc -fsanitize=address -g3
+CPPFLAGS = -Wall -Wextra -Werror -std=c++98 -Iinc
 COMMANDS = srcs/commands
 CPPFILES = srcs/Server.cpp main.cpp srcs/Client.cpp srcs/Channel.cpp srcs/redirect.cpp \
 			$(COMMANDS)/invite.cpp $(COMMANDS)/join.cpp $(COMMANDS)/kick.cpp \
@@ -56,6 +56,6 @@ fclean: clean
 re: clean all
 
 valgrind: $(NAME)
-	valgrind --leak-check=full --show-leak-kinds=all --suppressions=kqueue.supp ./ircserv 6667 XYZ 2> test
+	valgrind --leak-check=full --show-leak-kinds=all  --log-file=valgrind_result ./ircserv 6667 XYZ
 
 .PHONY: all clean fclean re install-deps valgrind
