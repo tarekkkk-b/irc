@@ -101,19 +101,24 @@ void Server::registerEvents(int fd, int16_t filter)
 		exit(EXIT_FAILURE);
 }
 
-std::string readLine(int fd) 
+std::string readLine(int fd, bool* disconnected) 
 {
 	std::string line;
 	char ch;
 	ssize_t n;
-	while ((n = read(fd, &ch, 1)) == 1)
+
+	while ((n = read(fd, &ch, 1)) == 1) 
 	{
+		line += ch;
 		if (ch == '\n') 
-		{
-			line += ch;  
-				break; }       
-		line += ch;                    
+			break;
 	}
+
+	if (n == 0) // client disconnected
+		*disconnected = true;
+	else
+		*disconnected = false;
+
 	return line;
 }
 
@@ -167,17 +172,19 @@ void Server:: cleanupAfterClient(Client *client, int fd)
 	{
 		return ;
 	}
-		std::vector <std::string> client_channels = client->getChannels();
-		for(size_t i =0; i < client_channels.size();i++)
-		{
-			_channels[client_channels[i]]->removeClientSilently(client);
-			if((_channels[client_channels[i]])->getClients().size()==0)
-			{	
-				delete _channels[client_channels[i]];
-				_channels.erase(client_channels[i]);
-				client_channels.erase(client_channels.begin() + i);
-			}
+	std::vector <std::string> client_channels = client->getChannels();
+	for(size_t i = 0; i < client_channels.size();i++)
+	{	
+		_channels[client_channels[i]]->removeClientSilently(client);
+		if((_channels[client_channels[i]])->getClients().size()==0)
+		{	
+			std::cout << "Channel " << _channels[client_channels[i]]->getName() << " Removed after its last client disconnected\n";
+			delete _channels[client_channels[i]];
+			_channels.erase(client_channels[i]);
+			client_channels.erase(client_channels.begin() + i);
 		}
+	}
+	std::cout << "Client " << fd << " Disconnected\n";
 	client ->destroyClient();
 	delete client;
 	deregisterEvent(fd,EVFILT_READ);
@@ -212,6 +219,7 @@ void Server :: handleEvents()
 			if(event.ident == this ->_servFd)
 			{
 				int client_fd = accept(this ->_servFd,NULL,NULL);
+				std::cout << "Client " << client_fd << " Connected\n";
 				registerEvents(client_fd,EVFILT_READ);
 			}
 			else if (event.filter == EVFILT_READ)
@@ -219,7 +227,14 @@ void Server :: handleEvents()
 				Client *client = getClientByFd(event.ident);
 				if (client == NULL)
 						clients_list[event.ident] = new Client(event.ident);
-				text = readLine(event.ident);
+				bool disconnected = false;
+				text = readLine(event.ident, &disconnected);
+				if (disconnected)
+				{
+					cleanupAfterClient(client, event.ident);
+					continue ;
+				}
+
 				read_buffers[event.ident] =  read_buffers[event.ident] + text;
 				if((read_buffers[event.ident].find('\n'))!= std::string::npos)
 				{
