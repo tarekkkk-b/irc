@@ -14,7 +14,7 @@ std::vector <Client * > Server::handlePrivMsg(std::string msg, std::vector<std::
 	if (colonPos != std::string::npos)
 		message = ":" + sender.getPrefix() + " PRIVMSG " + command[0] + " :" + msg.substr(colonPos + 2) + "\r\n";
 	else
-		message = noMsg;
+		return setClientsBuffer(std::vector< Client*>(1, &sender), noMsg);
 	if (command[0][0] == '#')
 	{
 		Channel * channel = getChannel(command[0]);
